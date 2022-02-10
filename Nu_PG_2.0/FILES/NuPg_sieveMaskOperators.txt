@@ -1,0 +1,5 @@
+a|b|c|d
+a--b&a|d
+a|b-c|a|d
+a--d
+a--c|b--d
