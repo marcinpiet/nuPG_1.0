@@ -1,2 +1,1 @@
-# nuPG_2020
-the New Pulsar Generator program (2020) - old version without additive model 
+# the New Pulsar Generator (nuPG) 1.0 
