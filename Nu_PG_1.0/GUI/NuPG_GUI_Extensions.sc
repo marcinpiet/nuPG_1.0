@@ -60,12 +60,12 @@ NuPG_GUI_Extensions {
 		)}), 0, 0);
 
 		slotGrid[i][3].addSpanning(defs.nuPGButton([
-			[""],
-			["", Color.black, Color.new255(250, 100, 90)]], 50, 150)
+			["MODULATION\n MATRIX"],
+			["MODULATION\n MATRIX", Color.black, Color.new255(250, 100, 90)]], 50, 150)
 		.action_({|butt| var st = butt.value;
 				switch(st,
-				0, {},
-				1, {};
+					0, {wfMatrix.visible(0)},
+				1, {wfMatrix.visible(1)};
 		)}), 0, 0);
 
 		slotGrid[i][4].addSpanning(defs.nuPGButton([

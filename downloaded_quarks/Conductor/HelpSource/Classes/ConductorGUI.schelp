@@ -1,0 +1,111 @@
+TITLE:: ConductorGUI
+
+SUMMARY:: Creates GUIs from Conductor info
+categories:: Control
+
+RELATED:: Conductor
+
+DESCRIPTION::
+ConductorGUI is an Enivronment whose parent environment (defined by [GUIEvent]) is a 'style sheet'
+of default gui functions that determine how a LINK::Classes/Conductor:: is to be displayed.
+
+INSTANCEMETHODS::
+
+METHOD::conductor
+RETURNS::the conductor to be displayed
+
+METHOD::keys
+RETURNS:: an STRONG::Array:: of keys and arrays of keys of items in the LINK::Classes/Conductor:: to be displayed.
+DISCUSSION:: Each item in the Array is displayed on its own line, so arrays of keys share a line. Unless overridden in guis each item identified by a key is sent a draw message.
+
+METHOD::header
+RETURNS:: an STRONG::Array:: of keys of items to be displayed before those in keys.  Defaults to
+TELETYPE::#[player, settings, preset]::
+
+METHOD::guis
+RETURNS::an STRONG::IdentityDictionary:: of gui functions that override the normal draw method of an item in the Conductor
+
+METHOD::stopOnClose
+DISCUSSION::flag determines if Conductor is stopped when gui window is closed
+
+
+METHOD::draw
+DISCUSSION::this is the command to draw the Conductor's GUI
+
+SECTION:: Using ConductorGUI
+
+ConductorGUI  defines default gui functions for the most commonly used classes within a Conductor:
+
+TABLE::
+## cvGUI || TELETYPE::~nslider::, for single-valued CV's
+## multicvGUI || TELETYPE::~multislider::, for multi-valued CV's
+## svGUI || TELETYPE::~popup::, for SV's
+
+## settingsGUI || for ConductorSettingsGUI
+## presetGUI || for CVPreset
+## interpolatorGUI || for CVInterpolator
+::
+
+The dictionary in guis can redefine how a particular key is to be drawn.
+
+Entries in this dictionary can be:
+
+DEFINITIONLIST::
+## a Symbol || the symbol selects a gui function defined in ConductorGUI,
+## an Array || the first element of the array selects the gui function which is
+used to draw the remaining elements of the array.
+## a Function || the function receives window, name and Conductor[name] as arguments
+::
+
+SECTION::Examples
+
+Here are some examples of how these features can be used:
+
+CODE::
+(	// Default case
+c = Conductor.make { | conductor, a, b, c, d| }.show
+)
+(	// Redefine default GUI, place items on one line
+c = Conductor.make { | conductor, a, b, c, d|
+	conductor.gui.use { ~cvGUI = ~knob };		// change default GUI
+	conductor.gui.keys = #[[a, b, c, d]];		// place them in a single row
+}.show
+)
+(	// Override default GUI
+c = Conductor.make { | conductor, a, b, c, d|
+	conductor.gui.guis = (
+		vsliders:	[\vslider, a, b, c, d]
+	);
+	conductor.gui.keys = #[vsliders];		// place them in a single row
+}.show
+)
+
+(	// Use dummy keys to display CVs many different ways
+c = Conductor.make { | conductor, a, b|
+	a	.sp(0, 0, 16, 1);
+	b	.sp(200, 20, 20000, 0, 'exp');
+
+	// note: the fields below are defined in the environment of the conductor,
+	// but the functions are actually evaluated in the environment of conductor.gui
+	conductor.gui.guis = (
+		b:	\numerical,
+		c:	[\rslider, [a, b] ],
+		d: 	[\vslider, a,b,a,b],
+		e: 	[\vrslider, [a,b], [a,b]],
+		f: 	[\tdslider, [a, b],[a, b] ],
+		g:	[\numerical, a,b],
+		h:	[\radiobuttons, a],
+		zz: 	{| win, name, cv |
+			~numerical.value(win, name, [a,b,a,b,a,b]);   // using functions defined in GUIEvent
+			a.connect(Slider(win,Rect(0,0,100,20)));    // writing GUI function directly
+		}
+
+	);
+
+	// define the order of displaying those items
+	conductor.gui.keys = #[a,b,c, [d, e, f], g, h, zz];
+};
+c.show(w:1000)
+)
+::
+

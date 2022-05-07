@@ -1,5 +1,3 @@
-
-
 NuPG_Ndefs {
 	//set of class variables -> instruments
 	classvar buffers;
@@ -226,7 +224,7 @@ NuPG_Ndefs {
 			//channel masking
 			chanMask = 0, centerMask = 1,
 			//sieve masing
-			sieveMaskOn = 0, sieveSequence = #[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+			sieveMaskOn = 0, sieveSequence = #[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 			sieveMod = 16
 			|
 
@@ -302,9 +300,11 @@ NuPG_Ndefs {
 			//burstMask = Demand.ar(trigFreq, 0, Dseq([Dser([1], burst), Dser([0], rest)], inf));
 			trig = trig * Demand.ar(trig, 1, Dseq([Dser([1], burst), Dser([0], rest)], inf));
 
-			//sieve masing
+			//sieve masking
 			sieveMask = Demand.ar(trig, 0, Dseries());
 			sieveMask = Select.ar(sieveMask.mod(sieveMod), K2A.ar(sieveSequence));
+
+			//sieveMask.poll(trig, 'sieveSeq');
 
 			trig = trig * Select.kr(sieveMaskOn, [K2A.ar(1), sieveMask]);
 
@@ -460,6 +460,10 @@ NuPG_Ndefs {
 				NuPG_Ndefs.saw.value(fluxRate, grainFreqFlux, 1, 0.2)
 			]);
 
+			//OffsetOut.ar(~trigBus, trig);
+			freqEnvPlayBuf = PlayBuf.ar(1, freqBuf,
+				(grain * 2048/Server.default.sampleRate), trig, 0, loop: 0);
+
 
 			//amplitude
 			amp = ampMain * micro_ampMult * meso_ampMult * (1 - mute);
@@ -488,13 +492,7 @@ NuPG_Ndefs {
 			channelMask = Demand.ar(trig, 0, Dseq([Dser([-1], chanMask),
 				Dser([1], chanMask), Dser([0], centerMask)], inf)).lag(0.001);
 
-			//OffsetOut.ar(~trigBus, trig);
 
-
-			freqEnvPlayBuf = PlayBuf.ar(1, freqBuf,
-				(grain * 2048/Server.default.sampleRate), trig, 0, loop: 0);
-
-			rate = 2048/Server.default.sampleRate* (1 + (freqEnvPlayBuf * fmAmt ));
 
 			bufStartFrame = startPos;
 
@@ -507,7 +505,20 @@ NuPG_Ndefs {
 				numChannels: 2,
 				trigger: trig,
 				bufnum: pulBuf,
-				formant: grain,
+				formant: grain * (1 +
+
+					Select.ar(selectRateMod, [
+						NuPG_Ndefs.latchSaw.value(grain * freqEnvPlayBuf * fmRatio,
+							fmAmt/modMul, fmAmt/modAdd, trig),
+						NuPG_Ndefs.latchSin.value(grain * freqEnvPlayBuf * fmRatio,
+							fmAmt/modMul, fmAmt/modAdd, trig),
+						NuPG_Ndefs.lfSaw.value(grain * freqEnvPlayBuf * fmRatio,
+							fmAmt/modMul, fmAmt/modAdd),
+						NuPG_Ndefs.sinOsc.value(fmAmt * fmRatio,
+							1.0, 1.0)
+					]
+					)
+				),
 				pan: pan,
 				amp: amp,
 				envbufnum: envBuf

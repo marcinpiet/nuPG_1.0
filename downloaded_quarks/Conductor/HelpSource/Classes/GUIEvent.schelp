@@ -1,0 +1,96 @@
+TITLE:: GUIEvent
+
+SUMMARY:: Defines a "style sheet" for ConductorGUI objects.
+categories:: Control
+
+RELATED:: Classes/Environment, Classes/Conductor, Classes/ConductorGUI
+
+
+DESCRIPTION::
+GUIEvent defines a default 'sytle sheet' for LINK::CLasses/ConductorGUI:: objects. Currently, GUIEvent defines a single Event, held in the STRONG::classvar:: TELETYPE::osx::.
+
+NOTE:: Eventually, events for linux and win32 will also be defined.::
+
+The event defines a set of functions that create and adjust windows:
+
+TABLE::
+## STRONG::window:: || arguments: name, rect
+## STRONG::nextLine:: || argument: win
+## STRONG::resizeWindowToContents:: || argument: win
+::
+
+It also defines a set of values that establish default sizes for different view orientations:
+
+TABLE::
+## STRONG::h::: 20 || default view height
+## STRONG::w::: 800 || default view width
+## STRONG::labelW::: 80 || width of a label and numberbox
+## STRONG::vh::: 200 || height of a vertical slider
+## STRONG::vw::: 20 || width of a vertical slider
+::
+
+It uses those values to define a set of fuctions that  create default boundary rectangles for different views:
+
+TABLE::
+## STRONG:: numericalRect::: || TELETYPE:: { Rect(0,0, ~labelW, ~h) }::
+## STRONG:: smallNumericalRect::: || TELETYPE:: { Rect(0,0, ~labelW/2, ~h) }::
+## STRONG:: sliderRect::: || TELETYPE:: { Rect(0,0, ~w, ~h) }::
+## STRONG:: vsliderRect::: || TELETYPE:: { Rect(0,0, ~vw, ~vh) }::
+## STRONG:: msliderRect::: || TELETYPE:: { Rect(0,0, ~w, ~vh) }::
+## STRONG:: tdsliderRect::: || TELETYPE:: { Rect(0,0, ~vh, ~vh) }::
+## STRONG:: movieRect::: || TELETYPE:: { Rect(0,0, 240, 320) }::
+## STRONG:: labelRect::: || TELETYPE:: { Rect(0,0, ~labelW, ~h) }::
+## STRONG:: popupRect::: || TELETYPE:: { Rect(0,0, ~labelW, ~h) }::
+## STRONG:: listRect::: || TELETYPE:: { Rect(0,0, ~labelW, ~h) }::
+## STRONG:: radioButtonsRect::: || TELETYPE:: { Rect(0,0,10,~h) }::
+::
+
+It defines a set of view functions that all take window, name, cv, and rect as arguments.  The argument cv can be single CV or an array.  In the latter case, the array is iterated and each element receives its own view. If rect is defined, it overrides the default Rects defined above. Below are the keys of the functions that call SCViews directly.
+
+primitives: items that directly use SCView classes
+
+TABLE::
+## STRONG::label::					|| SCStaticText
+## STRONG::numberBox::			|| SCNumberBox
+## STRONG::smallNumberBox::	|| SCNumberBox
+## STRONG::slider::					|| SCSlider
+## STRONG::rangeSlider::		|| SCRangeSlider
+## STRONG::twodSlider::			|| SC2DSlider
+## STRONG::popup::					|| SCPopupMenu
+## STRONG::list::						|| SCListView
+## STRONG::movie::					|| SCMovieView
+## STRONG::popup::					|| SCPopupMenu
+## STRONG::scmultislider::	|| SCMultiSliderView
+## STRONG::knob::						|| SCKnob, uses SCCompositeView
+## STRONG::vnumerical::			|| SCNumberBox, uses SCCompositeView
+::
+
+Another set of keys define labeled guis in terms of the primitives above:
+
+STRONG::horizontal orientation::
+
+TABLE::
+## STRONG::nslider::			|| slider with label and numerical
+## STRONG::rslider::			|| range slider with label, needs 2 CVs
+## STRONG::numerical::			|| numberBox
+## STRONG::smallNumerical::	|| smallNumberBox
+## STRONG::radiobuttons::		|| automatically scaled to range of the cv
+## STRONG::multislider::		|| scmultislider, CV should have multiple values
+::
+
+STRONG::vertical orientation::
+
+TABLE::
+## STRONG::vslider:: || slider
+## STRONG::vrslider::	 || Vertical rslider, needs 2 CVs
+## STRONG::tdslider::	 || needs 2 CVs
+::
+
+STRONG::these are primitives that require SV's::
+
+TABLE::
+## STRONG::popup:: || SCPopupView
+## STRONG::list:: || SCListView
+::
+
+Of course, this collection of functions is readily extensible, either by adding new keys to the LINK::Classes/ConductorGUI:: or to STRONG::GUIEvent-osx::.

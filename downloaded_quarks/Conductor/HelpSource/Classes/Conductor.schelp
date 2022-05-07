@@ -1,0 +1,576 @@
+TITLE:: Conductor
+
+SUMMARY:: A framework for defining interactive programs.
+categories:: Control
+
+RELATED::  Classes/ConductorPlayer, Classes/ConductorGUI, Classes/CV, Classes/SV, Classes/CVPreset, Classes/CVInterpolator
+
+DESCRIPTION::
+Conductor provides a framework for defining interactive programs in terms of a collection of related components. The Conductor is a kind of  Dictionary and its components are stored and accessed as dictionary entries (i.e., key/value pairs).  This allows the Conductor to be configured either when it is first defined or in separate code.
+
+The basic components of a Conductor are:
+
+NUMBEREDLIST::
+## STRONG::ConductorPlayer::, which can play, stop, pause, and resume an arbitrary collection of Tasks, Synths,
+Patterns, and NodeProxys as well as allocate and deallocate resources such s Buffers and Buses.
+By default a Conductor has a single player, but it can be readily configured to have several.
+
+## STRONG::CV::, which defines a control value or array of control values constrained to a specific range of values by a ControlSpec.  The value of a CV can be set directly or as an input ranging from 0 to 1 rescaled to the CV's range.  CVs provide methods to connect to GUI elements, server nodes, buses, and buffers and may be used directly in Pattern definitions. SV (symbolic value), EV (envelope value), and TV (text value) are classes derived from CV which provide similar interfaces. Typically, a Conductor has multiple CV's.
+
+## STRONG::ConductorGUI::, which defines the GUI representation of the Conductor
+
+## STRONG::CVPreset::, which saves the values of a user specified collection of components into selectable presets.
+CVInterpolator is a preset that also provides the ability to interpolate between presets.
+
+## STRONG::Conductor::, one Conductor can be a component of another, providing hierarchical control.
+::
+
+Conductor has the instance variables STRONG::player::, STRONG::gui::, and STRONG::preset:: which respectively default to a
+LINK::Classes/ConductorPlayer::, a LINK::Classes/ConductorGUI::, and a LINK::Classes/CVPreset::.
+
+The messages TELETYPE::spec_(specName, default):: and TELETYPE::sp(default, lo, hi, step, warp):: can be used to set the range of values a LINK::Classes/CV:: can assume.
+
+CODE::
+
+(
+a = Conductor.new; // create the conductor
+
+a.addCV(\cv1); // add some CVs
+a.addCV(\cv2);
+a.addCV(\cv3);
+
+w = a.show; // display it
+)
+::
+
+We can set the values and ranges of the CVs after creating the Conductor, if we want:
+
+CODE::
+(
+a[\cv1]	.sp(440, 20, 20000, 0, 'exp'); // set the range of cv1
+a[\cv2]	.sp(0.1, 0.01, 1, 0, 'exp'); // now cv2
+)
+
+
+(
+w.close; // close the display window
+defer({
+	a[\cv3].value = 1/(1..128);	// and change cv3 to represent an array
+	w = a.show // and show it now
+}, 0.1);
+)
+
+(
+w.close;
+defer({
+	a.useInterpolator;	// add the use of an interpolator
+	// save some presets
+	a[\cv3].value = 1/(1..128);
+	a.preset.addPreset;
+	a[\cv3].value = 1/(1..128).reverse;
+	a.preset.addPreset;
+	a.preset.presetCV.value_(0);
+	w = a.show; // show it
+}, 0.1);
+)
+
+(
+Task { // interpolate between the presets
+	loop {
+		a.preset.targetCV.value_(1);
+		100.do {|  i | a.preset.interpCV.value_(i/100); 0.01.wait };
+		a.preset.targetCV.value_(0);
+		100.do {|  i | a.preset.interpCV.value_(i/100); 0.02.wait };
+	}
+}.play(AppClock);
+)
+
+w.close;
+::
+
+In this example, the CV assigned to TELETYPE::d:: is given an array as a default value.
+
+CODE::
+(
+// Changing CV ranges
+c = Conductor.make { |conductor, a, b, c, d |
+	a	.spec_(\freq);
+	b	.spec_(\freq, 880);
+	c	.sp(1, 0, 15, 1);
+	d	.spec_(\unipolar,1/(1..128));
+};
+c.show;
+)
+
+
+(
+// Controlling a Pattern and a Group
+//  'vol' is assigned to both the Pattern and the Pattern's group
+// this provides continuous control of the pattern's notes as they are sounding
+
+b = Conductor.make({ arg conductor, freq, vol;
+	freq	.spec_(\freq);
+	vol	.sp(-20,-100,20);
+
+	conductor.name_( "a group used to control a pattern's synths");
+
+	conductor.group_( (id: [22], group: 0, addAction: 1), [amp: [vol, vol.dbamp], freq: freq  ]);
+
+	conductor.pattern_(Pbind
+		(\freq, Prand([1, 3/2, 5/4, 7/4], inf) * freq + Ptuple([Pwhite(-1.0,1),Pwhite(-1.0,1)]),
+			\db, vol,
+			\dur, Prand([0.2, 1.2],inf),
+			\group, 22,
+			\legato, 10),
+		quant:0 );
+
+} );
+
+b.show;
+)
+
+(
+// Using a Buffer and interpolation
+c = Conductor.make({ arg conductor,  freq, vol, overtones, waveform;
+	var buf;
+	freq			.spec_(\freq);
+	vol			.sp(-20,-100,20);
+	overtones		.sp(1/(1..64),0, 1);
+	waveform		.spec_(\bipolar, Array.fill(512,0));
+	SynthDef ("osc", { |out = 0, freq = 200, amp = 0.1, bufnum |
+		Out.ar(out, Osc.ar(bufnum, freq, 0, amp) )
+	}).store;
+	conductor.name_("synth");
+	conductor.buffer_(buf = (msg: \sine1, cv: overtones, display: waveform) );
+	b = buf;
+	conductor.synth_(a = (instrument: \osc), [
+		freq: [freq, freq * 3/2], amp: [vol, vol.dbamp], bufnum:  { buf.bufnum } ])
+});
+c.valueKeys_(#[overtones]);
+c.useInterpolator;
+//	c.usePresets;
+d = c.show;
+)
+
+::
+
+
+CLASSMETHODS::
+
+METHOD::new
+
+METHOD::make
+The first argument of the function is set to the Conductor being constructed. Subsequent arguments are initalized as CVs; arguments with default values are set to instances of the class the default value specifies.
+Below, the first line defines a Conductor with four CV's assigned to the arguments a,b,c,d.
+The second line displays that Conductor.
+CODE::
+(
+c = Conductor.make { | conductor, a, b, c, d |  };
+c.show;
+)
+
+(	// here the CV d is initialized to an array of values.
+c = Conductor.make { | conductor, a, b, c, d | d.value_(1/(1..128)) };
+c.show;
+)
+::
+
+
+
+METHOD:: specs
+STRONG::Control.specs:: is a dictionary of LINK::Classes/ControlSpecs::.  When an argument in the make function is initialized to a LINK::Classes/CV::, its identifier is looked up in this dictionary.   If that does not provide a ControlSpec, the same identifier stripped of all of its numeric characters is used once again look-up.
+The specs dictionary is provided with the following defaults:
+amp, audiobus, beats, bipolar, boostcut, controlbus, db, dbamp, delay, detune, dur, fadeTime, fin, freq, i_out, in, lofreq, longdelay, midfreq, midi, midinote, midivelocity, out, pan, phase, rate, ratio, rq, unipolar, widefreq
+CODE::
+
+(	// define a conductor using the default controlspecs
+Conductor.specs[\spT] = ControlSpec(-60, 700, 'linear', 0, 33);
+a = Conductor.make{ | con, freq1, db, pan, dur, spT3, s3pT, sp3T|
+	con.name_("example 1");
+	con.pattern_(Pbind(*[freq: freq1, db: db, pan: pan, dur: dur]) );
+};
+a.show;
+)
+(
+a.play;
+a[\freq].value = 700;
+)
+::
+
+
+
+INSTANCEMETHODS::
+
+SUBSECTION:: Instance Variables
+
+METHOD:: gui
+an instance of LINK::Classes/ConductorGUI:: that defines the Conductor's GUI presentation
+
+
+
+METHOD:: player
+an instance of LINK::Classes/ConductorPlayer::, which provides unified stop/play/pause/resume
+control for Patterns, Tasks, and, on the server, synths, groups, buses, and buffers.
+(These objects use a variant of Server-sendBundle to guarantee correct order execution on the server.)
+
+
+
+METHOD:: preset
+an instance of LINK::Classes/CVPreset:: or LINK::Classes/CVInterpolator::, this provides preset values for a user specified collection of CV's and Conductor's. The CVInterpolator allows interpolations between
+presets to be used for values.
+
+
+
+METHOD:: path
+stores the pathname of the file that saves the Conductor's settings and attempts to load those settings
+
+
+
+METHOD:: valueKeys
+an array of keys that determine the Conductor's response to value. (Typically includes both individual CV's and the CVPreset or CVInterpolator used by the Conductor.)
+
+SUBSECTION:: Player related methods
+
+METHOD:: stop
+
+METHOD:: play
+
+METHOD:: pause
+
+METHOD:: resume
+
+
+METHOD:: action
+Adds an ActionPlayer which responds to play, stop, pause, and resume by evaluating
+the corresponding function with the Conductor as currentEnvironment.
+CODE::
+(
+// action_can control any kind of user program,
+c = Conductor.make { |conductor, freq, db, dur |
+	freq	.spec_(\freq);
+	db		.spec_(\db, -10);
+	dur		.sp(0.2, 0.05, 1, 0, 'exp');
+
+	// add a pattern using actions,
+	// notice the use of ~player, an environment variable
+	// within the Conductor
+	conductor.action_(
+		{ ~pat = Pbind(*[freq: freq * 2, db: db, dur: dur/2])
+			.play(quant: 0);
+		},
+		{ ~pat.stop },
+		{ ~pat.pause},
+		{ ~pat.resume}
+	);
+	conductor.name_("test");
+};
+c.show;
+)
+::
+
+
+
+METHOD:: task
+Adds a which plays the function within a task scheduled by the specified clock and quantization. (On stop, tasks that block on a message port are also be deleted.)
+
+
+
+METHOD:: pattern
+Adds a PatternPlayer which plays the pattern with the specified event, clock and quantization.
+CODE::
+(
+// but convenience methods such as pattern_  are more concise
+c = Conductor.make { |conductor, freq, db, dur |
+	freq	.spec_(\freq);
+	db		.spec_(\db, -10);
+	dur		.sp(0.2, 0.05, 1, 0, 'exp');
+
+	conductor.pattern_(
+		Pbind(*[freq: freq * 2, db: db, dur: dur/2]),
+		quant: 0
+	)
+};
+c.show;
+)
+::
+
+
+
+METHOD:: nodeProxy
+Adds a NodeProxyPlayer, which uses the following bus, numChannels, and group if specified,
+otherwise uses default values.  See NodeProxy for details.
+CODE::
+(
+a = Conductor.make({ | con, freq1, freq2, widefreq3, db|
+	~np = NodeProxy.audio(Server.default, 2);
+	con.nodeProxy_(~np,
+		[freq1: freq1, freq2: freq2, widefreq3: widefreq3, db: db]
+	);
+	~np[0] = { | freq1, freq2, widefreq3, db|
+		Mix(SinOsc.ar([freq1, freq2, widefreq3], 0, db.dbamp))
+	};
+});
+a.show
+)
+::
+
+
+
+METHOD:: synth
+Attaches a Synth to the Conductor, which creates Play and Pause buttons for it.
+ARGUMENT:: ev
+The events use the same keys as note events in patterns. The keys server, group, and addAction and, for synths, instrument determine the group or synth. As in patterns, the default values for these keys are:
+CODE::
+server: Server.default,
+group: 1,
+addAction: 0,
+instrument: 'default'
+::
+Usually the node ID of the group or synth is dynamically allocated, but the key id can be
+set to set the id directly.  For group events, a new group  or collection of groups is created
+with the specified id(s).  For synth events, no synths are created, but the control values
+determined by the event are sent to the specified id(s).
+ARGUMENT:: cvs
+The argument STRONG::cvs:: is an interleaved array of keys and CVs (or value). CVs can also
+be altered  before being sent to the server and combinations of CVs can determine the value
+to be sent:
+TABLE::
+## value || [freq:	440  ]
+## CV || [freq: 	aCV  ]
+## altered CV || [freq: 	[ aCV, aCV.midicps ] ]
+## combination || [freq:	[ [aCV, bCV], aCV.midicps + bCV] ]
+## function || [freq:	[ aCV, { aCV.midicps.value + 33.rand }]]
+::
+DISCUSSION::
+CODE::
+(
+// Controlling a synth
+Conductor.make({ arg conductor, freq, volIndB;
+	freq	.spec_(\freq);
+	volIndB	.sp(-20,-100,20); // could use spec_(\db), as well
+
+	conductor.synth_(
+		(	instrument: \default, 		// this Event is explicitly specifying all the default values
+			addAction: 1,
+			group: 1,
+			server: Server.default
+		),
+		[freq: freq, amp: [volIndB, volIndB.dbamp], pan: -1 ]);
+
+}).show
+)
+::
+
+
+
+METHOD:: group
+CV's assigned to a group affect all of the synths within the group. In the following example the CV only alters playing synths, new synths use the default value:
+ARGUMENT:: ev
+See the description in STRONG::synth::, above.
+ARGUMENT:: cvs
+See the description in STRONG::synth::, above.
+DISCUSSION::
+CODE::
+(
+SynthDef("pm1", {arg out, freq, amp, pan, gate = 1,
+	ratio1 = 1, index1 = 1, a1 = 0.01, d1 = 0.2, s1 = 0.5, r1 = 1,
+	ratio2 = 1, index2 = 1, a2 = 0.01, d2 = 0.2, s2 = 0.5, r2 = 1;
+
+	var audio, env1, env2;
+	env1 =	EnvGen.kr(Env.adsr(a1,d1,s1,r1), gate, doneAction: 2) * index1;
+	env2 =	EnvGen.kr(Env.adsr(a2,d2,s2,r2), gate) * index2;
+
+	audio = PMOsc.ar(freq * ratio1, freq * ratio2, env2, 0, env1);
+
+	Out.ar(out, Pan2.ar(audio, pan, amp))
+}).store;
+
+
+Conductor.make({arg theconductor, index2, ratio1, ratio2 |
+	index2	.sp(0,0,20);
+
+	// create a whole bunch of groups in sequence
+	theconductor.group_(
+		(id:[2,3,4,5,6,7,8,9], addAction: 1), [index2: index2, ratio1: ratio1, ratio2: ratio2]
+	);
+
+	// play a pattern in one
+	theconductor.pattern_(Pbind(*[
+		instrument: \pm1,degree: Pwhite(0, 10), dur: 0.2, sustain: 2, group: 6,
+		ratio1: ratio1, ratio2: ratio2, index2: index2
+	]))
+}).show
+)
+::
+
+
+
+METHOD:: controlBus
+ARGUMENT:: ev
+The event can specify:
+TABLE::
+## server || aServer (defaults to Server.default)
+## index || (optional)
+::
+ARGUMENT:: cvs
+An array of CVs that are used to determine the value of consecutive buses.
+
+
+
+
+METHOD:: buffer
+ARGUMENT:: ev
+This event is designed primarily for small waveform buffers, it specifies:
+TABLE::
+## server || aServer (defaults to Server.default)
+## cv || a CV that determines the values in the buffer
+## msg || A symbol that determines how the values are used to fill the buffer. Is is one of:
+LIST::
+## \sine1
+## \cheby
+## \wave
+## \signal
+::
+## display || anotherCV
+An optional CV used to display the contents of the buffer (as received from the server)
+size: integer (defaults to 512 and should not exceed 1024).
+::
+
+
+
+
+
+
+SUBSECTION:: Value related methods
+
+METHOD:: value
+ARGUMENT:: kvs
+An array of valueKeys.  Assinging a new array iterates over the the array, assigning the value to be the value of the corresponding component identified by valueKeys.
+RETURNS::
+an array of the values of all components identified by valueKeys
+
+
+
+
+
+
+SUBSECTION:: Settings related methods
+A Conductor can load a set of initial settings for its contents from a file.
+
+
+METHOD:: noSettings
+no file controls are displayed
+
+
+METHOD:: useSettings
+allow a single set of settings to be saved to file and restored from file
+
+METHOD:: path
+Load the settings stored in the file identified by filePath.
+ARGUMENT:: path
+A path for the file.
+
+
+
+
+
+SUBSECTION:: Presets
+A CVPreset saves 'presets' for an array of CVs or other objects that respond to input and input_.
+
+METHOD:: presetKeys
+The objects at the keys will have their settings saved and restored by preset, which
+defaults to the object in the preset instance variable.
+
+METHOD:: usePresets
+creates a CVPreset, gives it valueKeys as its default presetKeys
+
+
+
+
+SUBSECTION:: Interpolator
+A CVInterpolator will set a specified set of CVs to values that derived from interpolating between two presets
+
+METHOD:: interpKeys
+The objects at the keys (which must be a subset of the valueKeys of the preset) can have their settings interpolated between preset values.
+
+METHOD:: useInterpolator
+creates a CVInterpolator, sets valueKeys to be both presetKeys and interpKeys
+
+DISCUSSION::
+Here is an example:
+
+CODE::
+(
+a = Conductor.make {arg theconductor, cv1, cv2, cv3;
+	cv1.sp(440, 20, 20000, 0, 'exp'); // set the value range of cv1
+	cv2.sp(0.1, 0.01, 1, 0, 'exp'); // set the value range of cv2
+
+	theconductor.useInterpolator; // we want to use an interpolator
+	theconductor.presetKeys_(#[cv3]); // we  want to save  cv3 only
+	theconductor.interpKeys = #[cv3]; // we only want to interpolate cv3
+
+
+	// save a preset
+	cv3.value = 1/(1..128); // set cv3 to an array of values
+	theconductor.preset.addPreset; // save it!
+
+	// save another preset...
+	cv3.value = 1/(1..128).reverse; // different values for cv3
+	theconductor.preset.addPreset; // save it!
+
+
+	theconductor.preset.presetCV.value = 1; // select a preset
+
+	theconductor.task_({ // this task is added to the player object
+		loop {
+			// once the player has something to play,
+			// its start button will appear in the GUI
+			theconductor.preset.targetCV.value_(0);
+			100.do({|i|
+				theconductor.preset.interpCV.value_(i/100);
+				cv2.value.wait
+			});
+
+			theconductor.preset.targetCV.value_(1);
+			100.do({|i|
+				theconductor.preset.interpCV.value_(i/100);
+				(cv2.value * 2).wait;
+			});
+		}
+	});
+}.show
+)
+::
+
+
+
+
+SUBSECTION:: adding new CVs
+
+METHOD:: addCV
+creates a CV, inserts it at TELETYPE::key:: in the Conductor and appends it to STRONG::valueItems:: and, if it exists, STRONG::presetItems::
+
+
+SUBSECTION:: MIDI related methods
+
+METHOD:: useMIDI
+this will add a set of controls to enable linking individual CVs to MIDI continuous controllers
+
+METHOD:: midiKBD
+ARGUMENT:: function
+The function receives a key number and velocity value and returns an object that responds to release (typically a Synth).
+ARGUMENT:: MIDIchannel
+If MIDIchannel is nil, it responds to MIDI key commands from all channels in "omni" mode.
+
+
+
+
+SUBSECTION:: GUI related methods
+
+METHOD:: show
+Draw the Conductor within a window named argName at x,y with size w,h.
+
+
+METHOD:: draw
+Draw the Conductor within the specified window.
+See LINK::Classes/ConductorGUI:: for more details.

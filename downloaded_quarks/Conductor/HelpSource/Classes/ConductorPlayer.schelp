@@ -1,0 +1,123 @@
+TITLE:: ConductorPlayer
+
+SUMMARY:: Add play/pause/stop/resume functionality to Conductor
+categories:: Control
+
+RELATED:: Classes/Conductor, Classes/CVEvent, Classes/ActionPlayer, Classes/PatternPlayer, Classes/TaskPlayer, Classes/NodeProxyPlayer, Classes/NodeEvent
+
+DESCRIPTION:: STRONG::ConductorPlayer:: provides unified control for any collection of 'players', which are objects that respond to TELETYPE::stop/play/pause/resume::.  The player classes listed above (STRONG::ActionPlayer::, STRONG::PatternPlayer::, STRONG::TaskPlayer::, and STRONG::NodeProxyPlayer::) adapt standard classes to this interface.
+
+STRONG::Groups::, STRONG::Synths::, STRONG::Control Buses::, and STRONG::Buffers:: can be controlled with STRONG::Events::.
+
+The instance variable TELETYPE::server:: can contain either a single STRONG::Server:: or an array of Servers.
+ConductorPlayer bundles all of the OSC commands generated in response to stop/play/pause/resume
+for the servers in that variable.
+
+INSTANCEMETHODS::
+
+SUBSECTION:: Instance Variables
+
+METHOD::conductor
+RETURNS::the Conductor that is the context for its players
+
+METHOD::name
+DISCUSSION::the name is used in GUI display
+
+METHOD::server
+DISCUSSION:: A server or array of servers, all of the OSC commands generated in response to
+stop/play/pause/resume are bundled for the server(s).
+
+METHOD::players
+RETURNS::the players controlled by the ConductorPlayer
+
+SUBSECTION:: Instance Methods
+
+METHOD::play
+METHOD::stop
+METHOD::pause
+METHOD::resume
+
+METHOD::add
+A player is an object that respods to stop, play, pause, resume
+
+METHOD::remove
+
+METHOD::action
+Adds an ActionPlayer which responds to play, stop, pause, and resume by evaluating
+the corresponding function with the Conductor as currentEnvironment.
+
+
+METHOD::task
+Adds a TaskPlayer which plays the function within a task scheduled by the specified clock
+and quantization. (On stop, tasks that block on a message port are also be deleted.)
+
+METHOD::pattern
+Adds a PatternPlayer which plays the pattern with the specified event, clock and quantization.
+
+METHOD::nodeProxy
+Adds a NodeProxy, which uses the following bus, numChannels, and group if specified,
+otherwise uses default values.  See LINK::Classes/BusPlug::
+
+METHOD::group
+The event is assigned CVEvent-groupEvent as its parent.
+ARGUMENT::ev
+The events use the same keys as note events in patterns. The keys server, group, and
+addAction and, for synths, instrument determine the group or synth. As in patterns, the
+default values for these keys are
+CODE::
+server: Server.default,
+group: 1,
+addAction: 0,
+instrument: 'default'
+::
+Usually the node ID of the group or synth is dynamically allocated, but the key id can be set
+to set the id directly.  For group events, a new group  or collection of groups is created with the
+specified id(s).  For synth events, no synths are created, but the control values determined by
+the event are sent to the specified id(s).
+ARGUMENT::cvs
+The argument args is an interleaved array of keys and CVs (or value).
+CVs can also be altered  before being sent to the server and combinations of CVs can
+determine the value to be sent:
+TABLE::
+## value || [freq: 440 ]
+## CV || [freq: aCV ]
+## altered CV || [freq: [ aCV, aCV.midicps ] ]
+## combination || [freq: [ [aCV, bCV], aCV.midicps + bCV] ]
+## function || [freq: [ aCV, { aCV.midicps.value + 33.rand }] ]
+::
+
+
+
+
+METHOD::synth
+The event is assigned CVEvent-synthEvent as its parent.
+
+METHOD::controlBus
+ARGUMENT::ev
+The event can specify
+CODE::
+server:	aServer (defaults to Server.default)
+index: 	(optional)
+::
+ARGUMENT::cvs
+CVs is an array of LINK::Classes/CV::s that are used to determine the value of consecutive buses
+
+METHOD::buffer
+ARGUMENT::ev
+This event is designed primarily for small waveform buffers, it specifies:
+TABLE::
+## server || aServer (defaults to Server.default)
+## cv || a CV that determines the values in the buffer
+## msg || A symbol that determines how the values are used to fill the buffer. Is is one of: TELETYPE::\sine1, \cheby, \wave,:: or TELETYPE::\signal::.
+## display || anotherCV
+An optional CV used to display the contents of the buffer (as received from the server)
+## size || integer (defaults to 512 and should not exceed 1024).
+::
+
+
+METHOD::makeBundles
+This is called by play,stop, pause and resume to bundle all of OSC commands sent to
+any of the Servers listed in the instance variable server.
+
+METHOD::draw
+Draws the ConductorPlayer in a ConductorGUI.

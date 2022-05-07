@@ -15,11 +15,12 @@ NuPG_Conductor {
 	var <>data_sequencer, <>data_sequencerSpeed, <>data_sequencerRanges;
 	var <>data_matrix;
 	var <>data_modulators;
+	var <>data_modulatorsRange;
 	var <>data_wavefold;
 	var <>data_pulsaret, <> data_envelope, <>data_frequency;
 	var <>data_pul_shaper, <>data_env_shaper, <>data_freq_shaper;
 	var <>data_probabilityMask, <>data_burstMask, <>data_channelMask;
-    var <>data_sieveMask, <>data_sieveMaskSequence;
+	var <>data_sieveMask, <>data_sieveMaskSequence;
 	var <>data_pulsaretFFT;
 	var <>data_envelope_dftZoom;
 	var <>data_scrubber, <>data_scrubberPositionLocal;
@@ -48,6 +49,7 @@ NuPG_Conductor {
 			//modulator matrix
 			data_matrix = Array.newClear(st);
 			data_modulators = Array.newClear(st);
+			data_modulatorsRange = Array.newClear(st);
 			//wavefold
 			data_wavefold = Array.newClear(st);
 			//masking
@@ -92,20 +94,26 @@ NuPG_Conductor {
 					//sequencers
 					data_0, data_1, data_2, data_3, data_4, //params
 					speed, //speed
-                    //sequencers ranges
+					//sequencers ranges
 					min_0, max_0, min_1, max_1, min_2, max_2, min_3, max_3,
 					min_4, max_4,
 					//modulator matrix
-					mx_00, mx_01, mx_02, mx_03,
-					mx_10, mx_11, mx_12, mx_13,
-					mx_20, mx_21, mx_22, mx_23,
-					mx_30, mx_31, mx_32, mx_33,
-					mx_40, mx_41, mx_42, mx_43,
-					mx_50, mx_51, mx_52, mx_53,
-					mx_60, mx_61, mx_62, mx_63,
-                    //modulators
+					mx_00_00, mx_01_00, mx_02_00, mx_03_00,
+					mx_10_00, mx_11_00, mx_12_00, mx_13_00,
+					mx_20_00, mx_21_00, mx_22_00, mx_23_00,
+					mx_30_00, mx_31_00, mx_32_00, mx_33_00,
+					mx_40_00, mx_41_00, mx_42_00, mx_43_00,
+					mx_50_00, mx_51_00, mx_52_00, mx_53_00,
+					mx_60_00, mx_61_00, mx_62_00, mx_63_00,
+					mx_70_00, mx_71_00, mx_72_00, mx_73_00,
+					//modulators
 					freq_0, freq_1, freq_2, freq_3,
 					index_0,  index_1, index_2, index_3,
+					//modulators range
+					mlow_0, mlow_1, mlow_2, mlow_3,
+					mhi_0, mhi_1, mhi_2, mhi_3,
+					mlow_4, mlow_5, mlow_6, mlow_7,
+					mhi_4, mhi_5, mhi_6, mhi_7,
 					//wavefold
 					low_0, low_1, low_2, low_3,
 					hi_0, hi_1, hi_2, hi_3,
@@ -140,32 +148,36 @@ NuPG_Conductor {
 						[mainTrig, mainGrain, mainEnv, mainPan, mainAmp],
 						//pergrain modulators
 						[mainMod, mainRatio, mainFlux],
-					   //sequencers
+						//sequencers
 						[data_0, data_1, data_2, data_3, data_4], //params
 						[speed], //speed
-                        //sequencers ranges
+						//sequencers ranges
 						[[min_0, max_0], [min_1, max_1], [min_2, max_2], [min_3, max_3], [min_4, max_4]],
-					    //modulator matrix
-						[[mx_00, mx_01, mx_02, mx_03],
-						 [mx_10, mx_11, mx_12, mx_13],
-						 [mx_20, mx_21, mx_22, mx_23],
-						 [mx_30, mx_31, mx_32, mx_33],
-						 [mx_40, mx_41, mx_42, mx_43],
-						 [mx_50, mx_51, mx_52, mx_53],
-						 [mx_60, mx_61, mx_62, mx_63]
+						//modulator matrix
+						[
+							[mx_00_00, mx_01_00, mx_02_00, mx_03_00],
+								[mx_10_00, mx_11_00, mx_12_00, mx_13_00],
+								[mx_20_00, mx_21_00, mx_22_00, mx_23_00],
+								[mx_30_00, mx_31_00, mx_32_00, mx_33_00],
+								[mx_40_00, mx_41_00, mx_42_00, mx_43_00],
+								[mx_50_00, mx_51_00, mx_52_00, mx_53_00],
+								[mx_60_00, mx_61_00, mx_62_00, mx_63_00],
+								[mx_70_00, mx_71_00, mx_72_00, mx_73_00]
+
+
 						],
-                        //modulators
+						//modulators
 						[[freq_0, index_0], [freq_1, index_1], [freq_2, index_2], [freq_3, index_3]],
-					    //wavefold
+						//wavefold
 						[[low_0, hi_0], [low_1, hi_1], [low_2, hi_2], [low_3, hi_3]],
-					    //masking
-				        //probability
+						//masking
+						//probability
 						[probability],
-					    //burst
+						//burst
 						[burst, rest],
-					    //channel
+						//channel
 						[channelMask, centerMask],
-					    //sieve
+						//sieve
 						[sieveMaskOn, sieveMod],
 						//sieve sequence
 						[sieveSequence],
@@ -178,7 +190,12 @@ NuPG_Conductor {
 						//scrubber
 						[scrubberPosition],
 						//local scrubbers
-						[scrubberPosition_1, scrubberPosition_2, scrubberPosition_3, scrubberPosition_4, scrubberPosition_5]
+						[scrubberPosition_1, scrubberPosition_2, scrubberPosition_3, scrubberPosition_4, scrubberPosition_5],
+						//modulators range
+						[
+							[mlow_0, mhi_0], [mlow_1, mhi_1], [mlow_2, mhi_2], [mlow_3, mhi_3],
+							[mlow_4, mhi_4], [mlow_5, mhi_5], [mlow_6, mhi_6], [mlow_7, mhi_7]
+						],
 					];
 
 
@@ -249,24 +266,27 @@ NuPG_Conductor {
 						}
 					};
 
-                    //matrix
+					//matrix
 					data_matrix[i] = paramNames[5].size.collect{|p|
 
 						paramNames[5][p].size.collect{|l|
-
-							paramNames[5][p][l].sp(0, 0, 1, 1)
+								paramNames[5][p][l].sp(0, 0, 1, 1)
 						}
 					};
+
 					//modulators
-					data_modulators[i] =
-					paramNames[6].size.collect{|p|
+
+					data_modulators[i] = paramNames[6].size.collect{|p|
+
 						paramNames[6][p].size.collect{|l|
 							var ranges = [
-								[0.01,550], //mod frequency range
-								[1, 10], //index range
+								[0.01, 50.0],
+								[1, 10],
 							];
+							var step = [[0.01],[1]];
+							var wrap = [[\exp],[\lin]];
 
-							paramNames[6][p][l].sp(1, ranges[l][0], ranges[l][1]);
+							paramNames[6][p][l].sp(0.1, ranges[l][0], ranges[l][1], step[l][0], wrap[l][0])
 						}
 					};
 
@@ -368,6 +388,24 @@ NuPG_Conductor {
 						paramNames[17][p].sp(0, 0, 1, 0.01);
 					};
 
+					data_modulatorsRange[i] =  paramNames[18].size.collect{|p|
+
+						paramNames[18][p].size.collect{|l|
+							var ranges = [
+								[0.0, 30.0],
+								[0.01, 16],
+								[0.0, 4.0],
+								[-1.0, 1.0],
+								[0.0, 1.0],
+								[0.0, 16.0],
+								[0.0, 16.0],
+								[0.0, 16.0]
+							];
+
+							paramNames[18][p][l].sp(ranges[p][l], ranges[p][0], ranges[p][1], 0.01)
+						}
+					};
+
 
 					//local tables presets -> rewrite it!!!!
 					con_pul.make{
@@ -413,83 +451,105 @@ NuPG_Conductor {
 						//tables
 						con_pul, con_env, con_freq,
 						//main
-					mainTrig, mainGrain, mainEnv, mainPan, mainAmp,
-					//pergrain modulators
-				    mainMod, mainRatio, mainFlux,
-					//sequencers
-					data_0, data_1, data_2, data_3, data_4, //params
-					speed, //speed
-                    //sequencers ranges
-					min_0, max_0, min_1, max_1, min_2, max_2, min_3, max_3,
-					min_4, max_4,
-					//modulator matrix
-					/*matrix,*/
-                    /*//modulators
-					freq_0, freq_1, freq_2, freq_3,
-					index_0,  index_1, index_2, index_3,
-					//wavefold
-					low_0, low_1, low_2, low_3,
-					hi_0, hi_1, hi_2, hi_3,*/
-					//shapers
-					pul_shaper,
-					//masking
-					//probability
-					probability,
-					//burst
-					burst, rest,
-					//channel
-					channelMask, centerMask,
-					//sieve
-					sieveMaskOn, sieveMod,
-					sieveSequence,
-					//pulsaretFFT
-					//pulsaretFFT,
-					//env dft zoom
-					//envelopeDftZoom,
-					//scrubb
-					//scrubberPosition,
-					//scrubberPosition_1, scrubberPosition_2, scrubberPosition_3, scrubberPosition_4, scrubberPosition_5
+						mainTrig, mainGrain, mainEnv, mainPan, mainAmp,
+						//pergrain modulators
+						mainMod, mainRatio, mainFlux,
+						//sequencers
+						data_0, data_1, data_2, data_3, data_4, //params
+						speed, //speed
+						//sequencers ranges
+						min_0, max_0, min_1, max_1, min_2, max_2, min_3, max_3,
+						min_4, max_4,
+						//modulator matrix
+						/*matrix,*/
+						mx_00_00, mx_01_00, mx_02_00, mx_03_00,
+					mx_10_00, mx_11_00, mx_12_00, mx_13_00,
+					mx_20_00, mx_21_00, mx_22_00, mx_23_00,
+					mx_30_00, mx_31_00, mx_32_00, mx_33_00,
+					mx_40_00, mx_41_00, mx_42_00, mx_43_00,
+					mx_50_00, mx_51_00, mx_52_00, mx_53_00,
+					mx_60_00, mx_61_00, mx_62_00, mx_63_00,
+					mx_70_00, mx_71_00, mx_72_00, mx_73_00,
+						/*//modulators
+						freq_0, freq_1, freq_2, freq_3,
+						index_0,  index_1, index_2, index_3,
+						//wavefold
+						low_0, low_1, low_2, low_3,
+						hi_0, hi_1, hi_2, hi_3,*/
+						//shapers
+						pul_shaper,
+						//masking
+						//probability
+						probability,
+						//burst
+						burst, rest,
+						//channel
+						channelMask, centerMask,
+						//sieve
+						sieveMaskOn, sieveMod,
+						sieveSequence,
+						//pulsaretFFT
+						//pulsaretFFT,
+						//env dft zoom
+						//envelopeDftZoom,
+						//scrubb
+						//scrubberPosition,
+						//scrubberPosition_1, scrubberPosition_2, scrubberPosition_3, scrubberPosition_4, scrubberPosition_5
+						mlow_0, mhi_0, mlow_1, mhi_1, mlow_2, mhi_2, mlow_3, mhi_3,
+						mlow_4, mhi_4, mlow_5, mhi_5, mlow_6, mhi_6, mlow_7, mhi_7
+
 					]);
 					conductor.interpKeys_(#[
 						//tables
 						con_pul, con_env, con_freq,
 						//main
-					mainTrig, mainGrain, mainEnv, mainPan, mainAmp,
-					//pergrain modulators
-					mainMod, mainRatio, mainFlux,
-					//sequencers
-					data_0, data_1, data_2, data_3, data_4, //params
-					speed, //speed
-                    //sequencers ranges
-					min_0, max_0, min_1, max_1, min_2, max_2, min_3, max_3,
-					min_4, max_4,
-					//modulator matrix
-					/*matrix,
-                    //modulators
-					freq_0, freq_1, freq_2, freq_3,
-					index_0,  index_1, index_2, index_3,
-					//wavefold
-					low_0, low_1, low_2, low_3,
-					hi_0, hi_1, hi_2, hi_3,*/
-					//shapers
-					pul_shaper,
-					//masking
-					//probability
-					probability,
-					//burst
-					burst, rest,
-					//channel
-					channelMask, centerMask,
-					//sieve
-					sieveMaskOn, sieveMod,
-					sieveSequence,
-					//pulsaretFFT
-					//pulsaretFFT,
-					//env dft zoom
-					//envelopeDftZoom,
-					//scrubb
-					//scrubberPosition,
-					//scrubberPosition_1, scrubberPosition_2, scrubberPosition_3, scrubberPosition_4, scrubberPosition_5
+						mainTrig, mainGrain, mainEnv, mainPan, mainAmp,
+						//pergrain modulators
+						mainMod, mainRatio, mainFlux,
+						//sequencers
+						data_0, data_1, data_2, data_3, data_4, //params
+						speed, //speed
+						//sequencers ranges
+						min_0, max_0, min_1, max_1, min_2, max_2, min_3, max_3,
+						min_4, max_4,
+						//modulator matrix
+						//matrix,
+						mx_00_00, mx_01_00, mx_02_00, mx_03_00,
+					mx_10_00, mx_11_00, mx_12_00, mx_13_00,
+					mx_20_00, mx_21_00, mx_22_00, mx_23_00,
+					mx_30_00, mx_31_00, mx_32_00, mx_33_00,
+					mx_40_00, mx_41_00, mx_42_00, mx_43_00,
+					mx_50_00, mx_51_00, mx_52_00, mx_53_00,
+					mx_60_00, mx_61_00, mx_62_00, mx_63_00,
+					mx_70_00, mx_71_00, mx_72_00, mx_73_00,
+
+						//modulators
+						freq_0, freq_1, freq_2, freq_3,
+						index_0,  index_1, index_2, index_3,
+						//wavefold
+						low_0, low_1, low_2, low_3,
+						hi_0, hi_1, hi_2, hi_3,
+						//shapers
+						pul_shaper,
+						//masking
+						//probability
+						probability,
+						//burst
+						burst, rest,
+						//channel
+						channelMask, centerMask,
+						//sieve
+						sieveMaskOn, sieveMod,
+						sieveSequence,
+						//pulsaretFFT
+						//pulsaretFFT,
+						//env dft zoom
+						//envelopeDftZoom,
+						//scrubb
+						//scrubberPosition,
+						//scrubberPosition_1, scrubberPosition_2, scrubberPosition_3, scrubberPosition_4, scrubberPosition_5
+						mlow_0, mhi_0, mlow_1, mhi_1, mlow_2, mhi_2, mlow_3, mhi_3,
+						mlow_4, mhi_4, mlow_5, mhi_5, mlow_6, mhi_6, mlow_7, mhi_7
 					]);
 
 				}
@@ -511,8 +571,8 @@ NuPG_Conductor {
 
 	getAllData {
 		var data = [data_main, data_perGrainModulation, data_sequencer, data_sequencerSpeed, data_sequencerRanges,
-data_matrix, data_modulators, data_wavefold, data_probabilityMask, data_burstMask, data_channelMask,data_sieveMask, data_sieveMaskSequence, data_pulsaret, data_envelope, data_frequency,
-data_pul_shaper, data_pulsaretFFT, data_envelope_dftZoom, data_scrubber, data_scrubberPositionLocal];
+			data_matrix, data_modulators, data_wavefold, data_probabilityMask, data_burstMask, data_channelMask,data_sieveMask, data_sieveMaskSequence, data_pulsaret, data_envelope, data_frequency,
+			data_pul_shaper, data_pulsaretFFT, data_envelope_dftZoom, data_scrubber, data_scrubberPositionLocal, data_modulatorsRange];
 		^data
 	}
 	valPack {

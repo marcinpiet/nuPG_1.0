@@ -1,0 +1,36 @@
+TITLE:: SV
+
+SUMMARY:: A CV that models an index into an array.
+categories:: Control
+
+RELATED:: Classes/CV, Classes/Conductor
+
+DESCRIPTION::
+An SV is a LINK::Classes/CV:: that models an index into an array stored in the SV's instance variable TELETYPE::items::.
+
+SV's are typically used within a Conductor to specify a symbol out of an array of Symbols that can be
+displayed with a PopupMenu or an SCListView.  Below is an example, see Conductor for more details.
+
+CODE::
+(
+Conductor.make{ | conductor, a, b |
+	~y = SV(Font.availableFonts);
+	~z = SV(Font.availableFonts);
+	a.spec_(~y.spec);
+	b.spec_(~z.spec);
+	~y.action_({|y| a.value_(y.value)});
+	~z.action_({|y| b.value_(y.value)});
+	// define custom gui properties
+	conductor.gui.use{
+		~popupRect = Rect(0,0,200, ~h);
+		~listRect = Rect(0,0,200, 400);
+
+	};
+	// An SV is a CV whose value is an index into an associated array.
+	// ~popup and ~listview display the entries in the array.
+
+	conductor.gui.keys = #[[y,a], [z,b]];
+	conductor.gui.guis = (z: \list, a: \numerical, b: \numerical);
+}.show(w: 450)
+)
+::

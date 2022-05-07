@@ -8,14 +8,14 @@ NuPG_GUI_Modulators {
 	var <>wf_ranges;
 	var <>modulatorType;
 
-	build {|data, iter, editor, colorScheme = 0|
+	build {|data, iter, modWrap, mod, editor, colorScheme = 0|
 
 		var view, viewLayout, slotGrid, slots, actions;
 		var defs = NuPG_GUI_definitions;
 
 
 		window = Window.new("MODULATOR_" ++ iter.asInteger,
-			Rect.fromArray(defs.nuPGDimensions[43 + iter.asInteger]), resizable: false);
+			Rect.fromArray(defs.nuPGDimensions[44 + iter.asInteger]), resizable: false);
 		window.userCanClose = false;
 		window.layout_(stack = StackLayout.new());
 
@@ -57,9 +57,10 @@ NuPG_GUI_Modulators {
 		)});
 
 			modulatorType[i][0] = defs.nuPGMenu(["sine", "saw", "latoc", "hennon", "gendyN"], 0);
-			/*modulatorType[i][0].action_({|menu|
-				nodes.set(\modSel, modulatorType[i][0].value);
-			});*/
+			modulatorType[i][0].action_({|menu|
+
+				modWrap[i][iter].source = mod[menu.value]
+			});
 
 
 			//put them into GUI

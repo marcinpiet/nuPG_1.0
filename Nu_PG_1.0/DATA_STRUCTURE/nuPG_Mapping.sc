@@ -9,7 +9,7 @@ NuPG_Mapping {
 		var getAllData = data.getAllData;
 		var main, perGrain;
 		var sequencer, sequencerSpeed, sequencerRanges;
-		var matrix, modulators, wavefold;
+		var matrix, modulators, modulatorsRanges, wavefold;
 		var probabilityMask, burstMask, channelMask, sieveMask, sieveSequence;
 		var pulsaret, envelope, frequency, pulsaretShaper;
 		var pulsaretFFT;
@@ -21,7 +21,7 @@ NuPG_Mapping {
 		sequencer, sequencerSpeed, sequencerRanges,
 		matrix, modulators, wavefold,
 		probabilityMask, burstMask, channelMask, sieveMask, sieveSequence,
-		pulsaret, envelope, frequency, pulsaretShaper, pulsaretFFT, envDftZoom, scrubbPosition = getAllData.size.collect{|i| getAllData[i]};
+		pulsaret, envelope, frequency, pulsaretShaper, pulsaretFFT, envDftZoom, scrubbPosition, modulatorsRanges = getAllData.size.collect{|i| getAllData[i]};
 
 
 		//mapping
@@ -29,7 +29,7 @@ NuPG_Mapping {
 		^3.collect{|i|
 			//main
 			5.collect{|l| main[i][l].connect(gui[0].sliders[i][l]);
-			                  main[i][l].connect(gui[0].numberBoxes[i][l])
+			              main[i][l].connect(gui[0].numberBoxes[i][l])
 			};
 			//pergrain
 			3.collect{|l| perGrain[i][l].connect(gui[1].sliders[i][l]);
@@ -44,14 +44,8 @@ NuPG_Mapping {
 			//sequencerSpeed
 			sequencerSpeed[i][0].connect(gui[3].slider[i]);
 			sequencerSpeed[i][0].connect(gui[3].numberBox[i]);
-			//matrix
-			//7.collect{|l| 4.collect{|k| matrix[i][l][k].connect(gui[4].matrix[i][l][k]) } };
-			//modulators
-			/*4.collect{|l| 2.collect{|k| modulators[i][l][k].connect(gui[5][l].sliders[i][k]) };
-				          2.collect{|k| modulators[i][l][k].connect(gui[5][l].numBoxes[i][k]) }
-			};
-			//wavefold
-			4.collect{|l| 2.collect{|k| wavefold[i][l][k].connect(gui[5][l].wf_ranges[i][k]) }};*/
+
+
 			//probabilityMask
 			probabilityMask[i][0].connect(gui[4].probabilityNumberBox[i]);
 			//burstMask
@@ -91,6 +85,22 @@ NuPG_Mapping {
 
 			//scrubber
 			scrubbPosition[i][0].connect(gui[13].slider[i]);
+
+			//matrix ranges
+			8.collect{|l|
+				2.collect{|k| data.data_modulatorsRange[i][l][k].connect(gui[14].range[i][l][k]) }
+			};
+
+			//modulators
+			4.collect{|l| 2.collect{|k| data.data_modulators[i][l][k].connect(gui[15][l].sliders[i][k]) };
+				          2.collect{|k| data.data_modulators[i][l][k].connect(gui[15][l].numBoxes[i][k]) }
+			};
+
+			//wavefold
+			4.collect{|l| 2.collect{|k| wavefold[i][l][k].connect(gui[15][l].wf_ranges[i][k]) }};
+
+			gui.postln;
+
 			//local preset - pulsaret waveform editor
 			data.conductor[trainConductors[i].asSymbol][\con_pul].preset.presetCV.connect(gui[7].presetNumberBox[i]);
 			data.conductor[trainConductors[i].asSymbol][\con_pul].preset.targetCV.connect(gui[7].targetPresetNumberBox[i]);
@@ -105,23 +115,25 @@ NuPG_Mapping {
 			data.conductor[trainConductors[i].asSymbol][\con_freq].preset.interpCV.connect(gui[9].interpolationSlider[i]);
 
 
+
 		}
 	}
 
-	mapDataToParams {|data, ndefs|
+	mapDataToParams {|data, ndefs, modulatorsChain, modulatorsDef|
 
 		var getAllData = data.getAllData;
 		var main, perGrain;
 		var sequencer, sequencerSpeed, sequencerRanges;
-		var matrix, modulators, wavefold;
+		var matrix, modulators, wavefold, modulatorsRanges;
 		var probabilityMask, burstMask, channelMask, sieveMask, sieveSequence;
 		var pulsaret, envelope, frequency, pulsaretShaper;
+		var pulsaretFFT, envDftZoom, scrubbPosition;
 
 		# main, perGrain,
 		sequencer, sequencerSpeed, sequencerRanges,
 		matrix, modulators, wavefold,
 		probabilityMask, burstMask, channelMask, sieveMask, sieveSequence,
-		pulsaret, envelope, frequency, pulsaretShaper = getAllData.size.collect{|i| getAllData[i]};
+		pulsaret, envelope, frequency, pulsaretShaper,pulsaretFFT, envDftZoom, scrubbPosition, modulatorsRanges = getAllData.size.collect{|i| getAllData[i]};
 
 		//nuPG core mapping
 		3.collect{|i|
@@ -144,7 +156,33 @@ NuPG_Mapping {
 				sieveMod: sieveMask[i][1],
 				sieveSequence: sieveSequence[i][0]
 			]);
+		};
+		//modulators mapping
+		3.collect{|i|
+			8.collect{|k|
+				modulatorsChain[i][k].setControls([
+					sel1: data.data_matrix[i][k][0],
+					sel2: data.data_matrix[i][k][1],
+					sel3: data.data_matrix[i][k][2],
+					sel4: data.data_matrix[i][k][3],
+			min: data.data_modulatorsRange[i][k][0],
+			max: data.data_modulatorsRange[i][k][1]
+				])
+			}
+		};
+
+		//modulator editors mapp
+		3.collect{|i|
+			4.collect{|k|
+				modulatorsDef[i][k].setControls([
+					modFrequency: data.data_modulators[i][k][0],
+					modIndex: data.data_modulators[i][k][1],
+					wfLo: data.data_wavefold[i][k][0],
+					wfHi: data.data_wavefold[i][k][1]
+				])
+			}
 		}
+
 	}
 
 	mapDataToSequencers {|data|
@@ -172,7 +210,7 @@ NuPG_Mapping {
 			var names = ["trigFreqMicro_", "grainFreqMicro_", "envMultMicro_", "panMicro_",
 			"ampMicro_"];
 		    var patt = names.size.collect{|l|
-					PL((names[l]++(1+i).asString).asSymbol).loop.asStream};
+					PL((names[l]++(1+i).asString).asSymbol).loop.asStream };
 
 				inf.do({
 					NuPG_Ndefs.trains[i].set(

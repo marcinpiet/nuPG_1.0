@@ -1,0 +1,38 @@
+TITLE:: CVInterpolator
+
+SUMMARY:: Enables interpolation between saved 'presets'.
+categories:: Control
+
+RELATED:: Classes/CVPreset, Classes/CVInterpolator, Classes/CV, Classes/Conductor, Classes/ConductorGUI
+
+DESCRIPTION::
+CVInterpolator is a LINK::CLasses/CVPreset:: that enables interpolation between saved presets.
+
+INSTANCEMETHODS::
+
+METHOD:: interpItems
+NOTE::Changing interpolation targets and degree of interpolation is all done by changing the values of targetCV and interpolationCV.::
+ARGUMENT:: argCVs
+STRONG::argCVs:: is a subset of STRONG::interpItems::
+
+SUBSECTION:: Instance Variables
+
+METHOD:: interpIndices
+indices of items to be interpolated (used to look up presets)
+
+METHOD:: interpItems
+items to be interpolated
+
+METHOD:: base
+settings of the interpItems when a new target was selected
+
+METHOD:: target
+settings of items towards which interpolation converges
+
+METHOD:: targetCV
+CV used to choose the target of interpolation
+
+METHOD:: interpCV
+CV used to control the degree of interpolation, ranges from 0 to 1
+
+

@@ -1,0 +1,34 @@
+TITLE:: Touch
+
+SUMMARY:: special combination of ControlSpec and CV for 'touch' controls
+categories:: Control
+RELATED:: Classes/CV
+
+DESCRIPTION::
+Touch creates a high priority control of a CV that can temporarily override other control sources altering
+the CV.  (This is often found in mixer automation schemes.)
+
+The touch object acts like a CV.  Its role is to immediately update the value of the CV it represents. This "touches" the CV and, for a time interval determined by the instance variable dur, it interpolates between the touch value and any new control values sent directly to the CV.
+
+The instance variable dur determines how long the override lasts.  The delta parameter determines how frequently the value of the CV is updated as it interpolates between the last touch value and other input.
+
+The method CV-touch returns a Touch representation of the CV, creating one if needed.
+
+Here is an example of its use:
+
+CODE::
+(
+a = Conductor.make{| con, a, rate|
+	rate	.sp(10, 0, 10);
+	~touchA = a.touch(rate);
+	con.gui.keys = #[a, touchA, rate];
+};
+
+a.show;
+
+)
+::
+
+CLASSMETHODS::
+
+METHOD::new

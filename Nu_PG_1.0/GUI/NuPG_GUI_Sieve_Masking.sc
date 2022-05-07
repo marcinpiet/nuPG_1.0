@@ -63,15 +63,17 @@ NuPG_GUI_Sieve_Masking {
 				//NuPg_synthesis.trains[i].set(\sieveSequence, currentLineFormat);
 			};
 
-			slotGrid[i][1].addSpanning(Button().states_([["EVAL"]]).action_({|butt|
+			slotGrid[i][1].addSpanning(Button().states_([["SEGMENTED BINARY"]]).action_({|butt|
 				//evaluate all sieve definitions
 				sieveInput.string.interpret;
+				sieveInput.string.interpret.postln;
 
 				//get current line from operator editor and format it
 				currentLineFormat =
 				sieveOperator.currentLine.interpret.toIntervals.list.asArray.collect{|i, index|
 
 					Array.fill(i, { index.odd.asInteger })}.flatten;
+				currentLineFormat.postln;
 				currentLineFormat.size.postln;
 				data.data_sieveMask[i][1].value =  currentLineFormat.size;
 				sieveOutput.string_((currentLineFormat).asString);
@@ -79,6 +81,25 @@ NuPG_GUI_Sieve_Masking {
 				("NEW SIEVE MASK SEQUENCE:" ++ currentLineFormat.asString).postln;
 				}),
 				2, 0, columnSpan: 2);
+
+			slotGrid[i][1].addSpanning(Button().states_([["SEQUENTIAL BINARY"]]).action_({|butt|
+				//evaluate all sieve definitions
+				sieveInput.string.interpret;
+				sieveInput.string.interpret.postln;
+
+				//get current line from operator editor and format it
+				currentLineFormat =
+				sieveOperator.currentLine.interpret.toIntervals.list.asArray.size.collect{|i|
+					[1] ++ (0!sieveOperator.currentLine.interpret.toIntervals.list.asArray[i])
+				}.flatten;
+				currentLineFormat.postln;
+				currentLineFormat.size.postln;
+				data.data_sieveMask[i][1].value = currentLineFormat.size;
+				sieveOutput.string_((currentLineFormat).asString);
+				data.data_sieveMaskSequence[i][0].value =  currentLineFormat;
+				("NEW SIEVE MASK SEQUENCE:" ++ currentLineFormat.asString).postln;
+				}),
+				3, 0, columnSpan: 2);
 
 			slotGrid[i][1].addSpanning(Button().states_([["formula save"]]).action_({|butt|
 				var fileGenerators, fileOperators;
@@ -92,7 +113,7 @@ NuPG_GUI_Sieve_Masking {
 				fileGenerators.close;
 				"SIEVE MASK FORMULA SAVED".postln;
 			}),
-			3, 0, columnSpan: 2);
+			4, 0, columnSpan: 2);
 		   /* slotGrid[i][1].addSpanning(Button().states_([["formula load"]]).action_({|butt|
 				sieveOutput.string_((currentLineFormat).asString);
 					data.data_sieveMask[0][0].value =  currentLineFormat;

@@ -105,7 +105,7 @@ NuPG_GUI_definitions {
 			//frequency editor
 			[870, 250, 900, 900],
 			//modulator matrix
-			[570, 405, 870, 870],
+			[570, 405, 390, 250],
 			//pulsaretFFT
 			[45, 270, 605, 460],
 			//mod 1
@@ -278,7 +278,19 @@ NuPG_GUI_definitions {
 		numberBox = NumberBox()
 		.maxWidth_(width)
 		.maxHeight_(height)
-		.font_(this.nuPgFont(size: 9));
+		.font_(this.nuPgFont(size: 9))
+		.scroll_step = 0.1;
+
+		^numberBox
+	}
+
+	*nuPGNumberBoxInteger {|height, width|
+		var numberBox;
+		numberBox = NumberBox()
+		.maxWidth_(width)
+		.maxHeight_(height)
+		.font_(this.nuPgFont(size: 9))
+		.scroll_step = 1;
 
 		^numberBox
 	}

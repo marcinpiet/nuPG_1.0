@@ -1,0 +1,42 @@
+TITLE:: CVPreset
+
+SUMMARY:: Enables saved 'presets' of CVs and other values.
+categories:: Control
+
+RELATED:: Classes/CVPreset, Classes/CVInterpolator, Classes/CV, Classes/Conductor, Classes/ConductorGUI
+
+DESCRIPTION::
+CVPreset saves 'presets' for an array of CVs or other objects that respond to STRONG::input:: and STRONG::input_::.
+LINK::Classes/CVInterpolator:: is a STRONG::CVPreset:: also able to interpolate between settings.
+
+INSTANCEMETHODS::
+
+METHOD:: items
+the items to be saved/restored
+
+METHOD:: presets
+the actual collections of different presets
+
+METHOD:: presetCV
+CV determines which preset to load
+
+NOTE::all control of preset selection and interpolation is done through presetCV, targetCV, and interpCV.::
+
+METHOD:: value
+ARGUMENT:: v
+RETURNS:: the contents of presets
+
+METHOD:: input
+ARGUMENT:: input
+iterates over input, setting the input of corresponding cvs
+RETURNS:: returns an array of input values for each of the elements of items
+
+METHOD:: set
+ARGUMENT:: index
+recall the preset at index
+
+METHOD:: draw
+draw the received using the function found at TELETYPE::~presetGUI::
+
+
+

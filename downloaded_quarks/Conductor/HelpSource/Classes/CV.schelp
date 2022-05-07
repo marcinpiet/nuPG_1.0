@@ -1,0 +1,383 @@
+TITLE:: CV
+
+SUMMARY:: A dynamic container for a number that can be plugged into Patterns, Streams, GUIs, Synths, etc.
+categories:: Control
+
+RELATED:: Classes/SV, Classes/Conductor
+
+DESCRIPTION::
+A CV models a single floating point value or an array of such values constrained to a specific numerical
+range by a ControlSpec. LINK::Classes/SV:: is a derived class that defines an index into an array.
+
+CV is derived from Stream so it can be used directly in Stream and Pattern definitions.
+CV:connect(view) will connect a CV to a GUI ControlView in both Cocoa and Swing.
+GUI representations.  A similar set of methods have been defined that connect
+argument arrays consisting of keys and CVs to nodes, buses, buffers, and NodeProxys.
+
+An SV is a CV that models an index into an array of Symbols.  The array is held in the instance
+variable items. The symbol corresponding to the CV's current value can be accessed with the
+method item.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: spec
+Any object that responds to asSpec (Nil, Symbol, ControlSpec, Array)  with a ControlSpec
+ARGUMENT:: default
+the default is constrained to lie within the range of the spec
+Note:: some common ControlSpecs include:
+TELETYPE::unipolar, bipolar, freq, lofreq, midfreq, widefreq, phase, rq, audiobus, controlbus, midi, midinote, midivelocity, db, amp, boostcut, pan, detune, rate, beats, delay::
+::
+
+
+INSTANCEMETHODS::
+
+SUBSECTION:: Setting the range of values on existing CVs
+
+
+METHOD:: spec
+ARGUMENT:: s
+Any object that responds to asSpec (Nil, Symbol, ControlSpec, Array)  with a ControlSpec
+ARGUMENT:: v
+the initial value of the CV
+
+
+METHOD:: sp
+ARGUMENT::	default
+inital value
+ARGUMENT:: lo
+smallest possible value
+ARGUMENT:: hi
+largest possible value
+ARGUMENT:: step
+smallest incremental change in GUI
+ARGUMENT:: warp
+either TELETYPE::'linear':: or TELETYPE::'exponential'::
+In the case of exponential warp, min and max must be non-zero and the same sign.
+
+DISCUSSION::
+CODE::
+a = CV(\freq, 480);
+b = CV.new.spec_(\bipolar, -1);
+c = CV.new.sp(0, 0 , 100);
+::
+
+
+METHOD:: connect
+ARGUMENT:: view
+The view to connect the CV to.
+An STRONG::Array:: of CVs defines connect to allow a set of CVs to be connected to a view with multiple control values (i.e., attaching two CVs to the two axes of Slider2D).
+
+
+
+
+SUBSECTION:: Accessing
+
+METHOD:: value
+Answer the current value of the control. This is how the control is read within tasks and patterns
+
+METHOD:: input
+ARGUMENT:: in
+an input value ranging form 0 to 1 results in TELETYPE::this.value:: ranging from STRONG::lo:: to STRONG::hi::.  This method is typically used by external controls (such as MIDI) and GUI views to alter the CV.
+RETURNS:: a number ranging form 0 to 1 that corresponds to postion of the current value between STRONG::lo:: to STRONG::hi::.
+
+
+METHOD:: value
+Set the current value of the control, irrespective of the range settings.
+
+
+METHOD:: windex
+Interprets the value of the CV as a probability table and returns a weighted random value
+
+
+METHOD:: indexedBy
+For use in Patterns:  uses the value of STRONG::key:: in the current Event as an index and returns the indexed value
+
+
+
+
+SUBSECTION:: CV connections using SimpleControllers
+
+When a CV's value is changed a changed message (with 'synch' as the identifier) is send to update any dependant objects.  For example, action_(function) creates a SimpleController which is added to the dependants of the CV and evaluated whenever the CV changes value.  This same basic mechanism  is used to connect the CV to GUI's, server, objects, and some other objects in the language. Most of this is more or less hidden from view.
+
+Under normal circumstances, CV connections are automatically removed when the targeted Control, Bus, or View is deleted.  If there is a program error, it is possible that connections will persist and will need to be explicitly removed.
+
+
+METHOD:: action
+ARGUMENT:: function
+Create a dependant SimpleController that evaluates the function whenever the CV's value is altered.
+
+
+METHOD:: release
+Remove all dependants. (This is actually a method of Object..)
+
+
+SECTION:: GUI connections
+
+The following methods establish connections between Views and CVs.
+
+NOTE:: At the moment, top-level abstract GUI names are not supported, so these examples use Qt GUIs directly.  This will be fixed. ::
+
+TABLE::
+## aCV || connect(aQSlider)
+## aCV || connect(aQNumberBox)
+## [xCV, yCV] || connect(aQSlider2D)
+## [loCV, hiCV] || connect(aQRangeSlider)
+## aCV || connect(aQMultiSliderView) || (for CVs with an array of values)
+## aCV || connect(aQPopUpMenu) || (for SVs, displays SV-items)
+## aCV || connect(aQListView) || (for SVs)
+::
+
+
+One CV can be connected to many views but each view is connected to only one CV.
+
+When a CV's value changes, it is relayed to all of its dependants including the source of the
+the change.  That way, the GUI accurately reflects the new value of the CV.  See the behavior
+of 'b' in the following example.
+
+The following example provides a generic graphic interface to two CVs. Subsequent examples depend on that window, so leave it open until you are finished working through the help file.  (The interpreter variables 'a' and 'b' contain the CVs used by the examples, so they should be left unaltered.)
+
+CODE::
+(
+a = CV(\freq);	// create a couple of CVs
+b = CV.new.sp(-10,-100,20, 10);
+
+w = Window("CV Demo", Rect(64, 0, 400, 300)).front; // make a window
+w.view.decorator = FlowLayout(w.view.bounds);
+
+// CVs can be connected to QSlider and QNumberBox.
+z = QNumberBox(w, Rect(0, 0, 50, 20));
+a.connect(z);
+y = QSlider(w, Rect(50, 0, 150, 20));
+a.connect(y);
+
+w.view.decorator.nextLine;
+
+b.connect( QNumberBox(w, Rect(0, 0, 50, 20)) );
+b.connect( QSlider(w, Rect(50, 0, 150, 20))  );
+
+w.view.decorator.nextLine;
+
+// Pairs of CVs can be connected to QRangeSlider, QSlider2D .
+r = QRangeSlider(w, Rect(0, 0, 200, 20));
+[a,b].connect(r);
+
+t = QSlider2D(w, Rect(0, 0, 200, 200));
+[a,b].connect(t);
+
+)
+::
+
+SECTION:: Server connections
+
+OSC commands (i.e.,  /n_set,  /s_new) specify initial values of parameters as a flat array of pairs consisting of a  name and its initial value:
+
+CODE::
+[frequency: 440, amplitude: 1, ...]
+::
+
+"Extended argument arrays" allow CVs to be used in place of the initial value. This is the standard syntax for establishing connections between CVs and a server. In an extended argument array, the CV's value can be altered before being sent, multiple CV's can determine the value to be sent, and the value to be sent can be determined by a function:
+
+TABLE::
+## value || [freq: 440  ]
+## CV || [freq: aCV  ]
+## altered CV || [freq: [ aCV, aCV.midicps ] ]
+## combination || [freq: [ [aCV, bCV], aCV.midicps + bCV] ]
+## function || [freq: [ aCV, { aCV.midicps.value + 33.rand }]]
+::
+
+For example, the method Synth-controls is identical to Synth-new except the args parameter is extended:
+
+CODE::
+// Synth-controls(defName, extendedArgArray, target, addAction)
+
+( // basic CV connection
+Synth.controls("default", [
+	freq: a
+]);
+)
+
+( // modified CV connection
+Synth.controls("default", [
+	amp: [b, b.dbamp],
+	freq: a
+]);
+)
+(// multiple modified connection
+Synth.controls("default", [
+	freq: [
+		[a,b], a + b,
+	],
+	amp: [
+		[a,b], (a.cpsmidi.neg/4 + b).dbamp
+	]
+]);
+)
+::
+
+In the previous two examples, the modifying expression is actually a combination of Streams altered with binary and unary operators.  This is concise, but in some cases, it may be necessary to use a Function to define the modification. Notice that within a Function definition it is necessary to explicitly extract the value of the CV using a value message.
+
+CODE::
+(// a Function modifying the CV connection
+Synth.controls("default", [
+
+	freq: [b, { var index; (index = b.value + 100 /12 ).asInteger;
+		[100,200,300,400,500, 600].mirror.at(index)
+	}],
+	amp: [
+		[a,b], {(a.value.cpsmidi.neg/4 + b.value).dbamp  }
+	]
+]);
+)
+::
+
+
+SECTION:: Summary of Node related connection methods
+
+DEFINITIONLIST::
+
+
+## Array
+||
+DEFINITIONLIST::
+## TELETYPE::connectToNode(server, nodeID)::
+## TELETYPE::connectToNodeProxy(server, nodeID)::
+|| the receiver is a flat Array of name/value pairs
+## TELETYPE::connectToBuffer(server, bufnum)::
+## TELETYPE::connectToBus(server, index)::
+|| the receiver is an Array of CVs.
+::
+
+
+## Node
+||
+DEFINITIONLIST::
+## TELETYPE::setControls(extendedArgArray)::
+||
+::
+
+
+## NodeProxy
+||
+DEFINITIONLIST::
+## TELETYPE::setControls(extendedArgArray)::
+|| connects CVs to the named controls
+::
+
+CODE::
+(
+c = CV.new.sp(-20, -100, 120);
+p = NodeProxy.audio(s, 2);
+p.play; //play to hardware output, return a group with synths
+p.setControls([f: a, c: [b, { \freq.asSpec.map(b.input)}] ]);
+b.input_(0.5);
+p.source = { arg f=400, c = 400; PMOsc.ar(f , c, 4, 0, 0.1) };
+)
+::
+
+## Synth
+||
+DEFINITIONLIST::
+## TELETYPE::*controls(synthDef, extendedArgArray, target, addAction)::
+|| This is the same as *new, but allows CV's to be used in the args array.
+::
+
+## Bus
+||
+DEFINITIONLIST::
+## TELETYPE::*controls(arrayOfCVs, server)::
+||
+CODE::
+(
+c = { arg f = 400,  a = -20, pan = 0; Pan2.ar(SinOsc.ar(f, 0, a.dbamp), pan) }.play;
+d = Bus.controls([a,b],s);
+[a,b].connectToBus(d.server, d.index);
+Routine({						// need to make sure the synth has been created...
+	s.sync;
+	c.map(\f,d.index,\a,d.index + 1);
+}).play;
+)
+::
+
+## TELETYPE:: setControls(arrayOfCVS)::
+||
+connects CVs to consecutive buses
+CODE::
+(
+c = { arg f = 400,  a = -20, pan = 0; Pan2.ar(SinOsc.ar(f, 0, a.dbamp), pan) }.play;
+d = Bus.control(s,3);
+d.setControls([a,b]);
+[a,b].connectToBus(d.server, d.index);
+Routine({						// need to make sure the synth has been created...
+	s.sync;
+	c.map(\f,d.index,\a,d.index + 1);
+}).play;
+)
+::
+::
+::
+
+SECTION:: Reading and writing CVs in functions and patterns
+
+DEFINITIONLIST::
+
+## Tasks
+|| Within a function, CVs are accessed using value and input and  altered using value_ and input_.
+CODE::
+(
+Task({
+	10.do({
+		a.input.post; " ".post;		// print the value scaled to the range [0,1]
+		a.value.postln; 			// print the actual value
+		a.input_(1.0.rand); 		// select a new value at random
+		// the weighting of values will conform to the warp
+		// with \exp, values fall uniformly in each octave
+		wait(0.1);
+	})
+}).play(AppClock)
+)
+::
+
+## Patterns
+|| Within a pattern definition, a CV can directly substitute for a Pattern:
+CODE::
+(
+SynthDescLib.global.read;
+Pbind(
+	\instrument, \default,
+	\freq, a,
+	\db, b,
+	\dur, 0.2
+).play(quant: 0);
+)
+::
+Pfunc can be used to change the CV from within a Pattern.
+CODE::
+(
+SynthDescLib.global.read;
+Pbind(	\instrument,	\default,
+	\freq, Pwhite(100, 1000).round(100),
+	\placeholder, Pfunc({ arg ev; a.value_(ev.at(\freq)) }),
+	\db, b,
+	\dur, 0.2
+).play;
+)
+::
+::
+
+
+SECTION:: CVs and external input
+
+The STRONG::input_(in):: method makes it easy to connect a CV to any control source:
+
+CODE::
+( // MIDI
+MIDIClient.init;
+MIDIIn.connect(0,0);
+MIDIIn.control = { arg src, chan, num, val;			a.input_(val/127)
+}
+)
+::
+
+The methods STRONG::input:: and STRONG::input_:: are also used by ConductorPreset to allow interpolations between settings that follow warp of the CV's ControlSpec.

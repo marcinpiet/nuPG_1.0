@@ -113,7 +113,7 @@ NuPG_GUI_Envelope_Editor {
 						temp = FloatArray.newClear(4096);
 						file.readData(temp);
 						array = temp.asArray.resamp1(2048).copy;
-						array = array.linlin(-1.0, 1.0, 0.0, 1.0);
+						//array = array.linlin(-1.0, 1.0, 0.0, 1.0);
 						data.data_envelope[i].value_(array);
 						buffer[i][1].sendCollection(array);
 					},{"cancelled".postln}
@@ -153,7 +153,7 @@ NuPG_GUI_Envelope_Editor {
 				temp = FloatArray.newClear(4096);
 				file.readData(temp);
 				array = temp.asArray.resamp1(2048).copy;
-				array = array.linlin(-1.0, 1.0, 0.0, 1.0);
+				//array = array.linlin(-1.0, 1.0, 0.0, 1.0);
 
 				data.data_envelope[i].value = array;
 				buffer[i][1].sendCollection(array);

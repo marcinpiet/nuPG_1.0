@@ -6,8 +6,11 @@ NuPG_GUI_Server {
 	var <>timeStamp;
 	var <>fullRecordingPath;
 	var <>numChan = 2;
+	var <>modChain;
+	var <>modWrap;
+	var <>mod;
 
-	build {|data, buffers, pattern, views, map, colorScheme = 0|
+	build {|data, buffers, pattern, views, map, modulatorChain, colorScheme = 0|
 
 		var view, layout, slotGrid, slots, actions;
 		var formatList;
@@ -45,10 +48,13 @@ NuPG_GUI_Server {
 				[ "FREE", Color.black, Color.new255(250, 100, 90)]], 20, 70)
 		.action_({|sl| var st = sl.value; st.postln;
 			switch(st,
-				0, {Server.default.quit},
-				1, {Server.default.waitForBoot(
+				0, {Server.local.quit},
+				1, {Server.local.waitForBoot(
 					{
 						var connection, names, default, params;
+						//var mod = NuPG_Modulators.subModulators;
+						//modWrap = NuPG_Modulators.modulatorWrap;
+						//modChain = NuPG_Modulators.modulatorChain;
 
 
 						//allocate required memory on the server for buffers
@@ -63,80 +69,94 @@ NuPG_GUI_Server {
 						};
 
 						names = [
-								[\trigFreqMicro_1, \grainFreqMicro_1, \envMultMicro_1, \panMicro_1, \ampMicro_1],
-								[\trigFreqMicro_2, \grainFreqMicro_2, \envMultMicro_2, \panMicro_2, \ampMicro_2],
-								[\trigFreqMicro_3, \grainFreqMicro_3, \envMultMicro_3, \panMicro_3, \ampMicro_3]
-							];
+							[\trigFreqMicro_1, \grainFreqMicro_1, \envMultMicro_1, \panMicro_1, \ampMicro_1],
+							[\trigFreqMicro_2, \grainFreqMicro_2, \envMultMicro_2, \panMicro_2, \ampMicro_2],
+							[\trigFreqMicro_3, \grainFreqMicro_3, \envMultMicro_3, \panMicro_3, \ampMicro_3]
+						];
 						default = [1,1,1,0,1];
 						params = 3.collect{|i|
-								5.collect{|l|
-									currentEnvironment.put(names[i][l], default[l]);
+							5.collect{|l|
+								currentEnvironment.put(names[i][l], default[l]);
 
-									//currentEnvironment.put(names[i][l], pattern.microSeqData[i][l]);
+								//currentEnvironment.put(names[i][l], pattern.microSeqData[i][l]);
+							}
+						};
+
+						3.collect{|i|
+							4.collect{|k| modWrap[i][k].source = mod[0] }
+						};
+
+						3.collect{|i|
+							var defVal = [1,1,1,0,1,1,1,1];
+
+							8.collect{|k|
+								modChain[i][k].source = {|modOn = 0, sel1 = 0, sel2 = 0, sel3 = 0, sel4 = 0,
+									                      min = 0, max = 1|
+                                    var onOff;
+									var mod1 = Select.ar(sel1, [K2A.ar(defVal[k]), modWrap[i][0]]);
+									var mod2 = Select.ar(sel2, [K2A.ar(1), modWrap[i][1]]);
+									var mod3 = Select.ar(sel3, [K2A.ar(1), modWrap[i][2]]);
+									var mod4 = Select.ar(sel4, [K2A.ar(1), modWrap[i][3]]);
+
+									//(mod1 * mod2 * mod3 * mod4).linlin(-1.0, 1.0, min, max);
+
+									onOff = Select.ar(modOn, [K2A.ar(defVal[k]),
+										(mod1 * mod2 * mod3 * mod4).linlin(-1.0, 1.0, min, max)]);
 								}
 							};
 
-/*						3.collect{|i|
-							var defVal = [1,1,1,1,1,0,1];
-							7.collect{|l|
-								var param = [
-									\trigFreqMod,
-									\grainFreqMod,
-									\envMod,
-									\fmAmtMod,
-									\fmRatioMod,
-									\panMod,
-									\ampMod];
-								NuPG_Ndefs.trains[i].set(param[l],
+						};
 
-									Ndef(("modParam_"++i++l).asSymbol));
 
-								Ndef(("modParam_"++i++l).asSymbol).set(\modOn, 0);
-								Ndef(("modParam_"++i++l).asSymbol).set(\def, defVal[l]);
-			};
+						//map modulators to params
+						3.collect{|i|
+							var params = [\trigFreqMod, \grainFreqMod, \envMod, \panMod, \ampMod, \fmAmtMod,\fmRatioMod, \allFluxAmt];
 
-		};*/
+							params.size.collect{|k|
+								Ndef(("train_" ++ (1+i).asString).asSymbol).set(params[k], modChain[i][k])
+							}
+						};
+
 						//DEFAULT VALUES
 						/*3.collect{|i|
-							//main
-							data.data_main[i][0].value = 567.67;
-							data.data_main[i][1].value = 1;
-							data.data_main[i][2].value = 1;
-							data.data_main[i][3].value = 0;
-							data.data_main[i][4].value = 0.5;
-							//ppModulation
-							data.data_ppModulation[i][0].value = 0;
-							data.data_ppModulation[i][1].value = 0;
-							data.data_ppModulation[i][2].value = 0;
-							//modulators
-							4.collect{|l|
-								data.data_modulators[i][l][0].value = 3;
-								data.data_modulators[i][l][1].value = 1;
-							};
-							//micro sequencer
-							names = [
-								[\trigFreqMicro_1, \grainFreqMicro_1, \envMultMicro_1, \panMicro_1, \ampMicro_1],
-								[\trigFreqMicro_2, \grainFreqMicro_2, \envMultMicro_2, \panMicro_2, \ampMicro_2],
-								[\trigFreqMicro_3, \grainFreqMicro_3, \envMultMicro_3, \panMicro_3, \ampMicro_3]
-							];
+						//main
+						data.data_main[i][0].value = 567.67;
+						data.data_main[i][1].value = 1;
+						data.data_main[i][2].value = 1;
+						data.data_main[i][3].value = 0;
+						data.data_main[i][4].value = 0.5;
+						//ppModulation
+						data.data_ppModulation[i][0].value = 0;
+						data.data_ppModulation[i][1].value = 0;
+						data.data_ppModulation[i][2].value = 0;
+						//modulators
+						4.collect{|l|
+						data.data_modulators[i][l][0].value = 3;
+						data.data_modulators[i][l][1].value = 1;
+						};
+						//micro sequencer
+						names = [
+						[\trigFreqMicro_1, \grainFreqMicro_1, \envMultMicro_1, \panMicro_1, \ampMicro_1],
+						[\trigFreqMicro_2, \grainFreqMicro_2, \envMultMicro_2, \panMicro_2, \ampMicro_2],
+						[\trigFreqMicro_3, \grainFreqMicro_3, \envMultMicro_3, \panMicro_3, \ampMicro_3]
+						];
 
-							default = [1,1,1,0,1];
-							params = 3.collect{|i|
-								5.collect{|l|
-									currentEnvironment.put(names[i][l], default[l]);
+						default = [1,1,1,0,1];
+						params = 3.collect{|i|
+						5.collect{|l|
+						currentEnvironment.put(names[i][l], default[l]);
 
-									//currentEnvironment.put(names[i][l], pattern.microSeqData[i][l]);
-								}
-							};
+						//currentEnvironment.put(names[i][l], pattern.microSeqData[i][l]);
+						}
+						};
 					}*/}
 				).doWhenBooted({
-					//var modulators = NuPG_Ndefs.modulators;
-                        //var modulatorsAll = NuPG_Ndefs.modulatorsParam;
 
-                        //set default Ndef synth
-						3.collect{|i| NuPG_Ndefs.trains[i][0] = NuPG_Ndefs.nuPG_AdC(2) };
-                        map.mapDataToParams(data, NuPG_Ndefs);
-					    map.mapDataToSequencers(data);
+
+					//set default Ndef synth
+					3.collect{|i| NuPG_Ndefs.trains[i][0] = NuPG_Ndefs.nuPG_AdC(2) };
+					map.mapDataToParams(data, NuPG_Ndefs, modChain, modWrap);
+					map.mapDataToSequencers(data);
 
 				});
 			})
@@ -195,7 +215,7 @@ NuPG_GUI_Server {
 			,0, 4);
 
 
-       2.collect{|i| layout.addSpanning(slots[i], i, 0)};
+		2.collect{|i| layout.addSpanning(slots[i], i, 0)};
 
 		^window.front
 
