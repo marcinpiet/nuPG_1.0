@@ -12,3 +12,9 @@ at the moment works on Mac OS, Linux and Windows versions are possible in the fu
 7. Recompile the library, CMD+Shift+L
 8. Run 'nuPG_1.0_startUp.scd' you should end up with a GUI like the one below:
 
+![alt text](https://github.com/marcinpiet/nuPG_1.0/blob/main/nuPG_1.0_ScreenShot.png?raw=true)
+
+ 
+
+
+
