@@ -1,0 +1,5 @@
+~size = 16;
+a = Sieve(3, `~size);
+b = Sieve(5, `~size);
+c = Sieve(7, `~size);
+d = Sieve(11, `~size);

@@ -72,6 +72,7 @@ CV : Stream {
 		var connectDictionary = (
 			numberBox:		CVSyncValue,
 			slider:			CVSyncInput,
+			//smoothslider:  CVSyncInput,
 			rangeSlider:		CVSyncProps(#[lo, hi]),
 			slider2D:			CVSyncProps(#[x, y]),
 			multiSliderView:	CVSyncMulti,
