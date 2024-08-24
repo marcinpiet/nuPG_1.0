@@ -1,4 +1,4 @@
-# The New Pulsar Generator (nuPG) 1.0 
+# The New Pulsar Generator (nuPG) 2024 
 
 This is the personal nuPG version I have been working with and developing for the past couple of years.
 
