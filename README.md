@@ -2,7 +2,7 @@
 
 This is the personal nuPG version I have been working with and developing for the past couple of years.
 
-1. Download the latest SuperCollider from: [https://supercollider.github.io/releases/2021/08/02/supercollider-3.12.0](https://supercollider.github.io/downloads)
+1. Download the latest SuperCollider from: https://supercollider.github.io/downloads  
 2. Install SuperCollider
 3. Locate the Quarks folder, it can be retrieved from within SC IDE by calling Platform.userAppSupportDir
 4. Create 'downloaded-quarks' if it doesn't exist and copy the Conductor folder from the 'downloaded-quarks' folder in this repository. !!! Could you make sure that you don't download a version of the Conductor from the web !!! The quark is old and no longer supported, a version included here fixes (in a dirty and hacky way) several problems of the original code
