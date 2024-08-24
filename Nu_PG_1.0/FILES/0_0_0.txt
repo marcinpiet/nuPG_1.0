@@ -1,5 +1,0 @@
-//train: 1
-//modulator: 1
-//type: sinosc
-
-
