@@ -1,4 +1,0 @@
-a = Sieve(3, `16);
-b = Sieve(5, `16);
-c = Sieve(7, `16);
-d = Sieve(11, `16);
