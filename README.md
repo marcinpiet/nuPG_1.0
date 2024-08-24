@@ -1,6 +1,6 @@
 # the New Pulsar Generator (nuPG) 1.0 
 
-at the moment working on Mac OS, Linux and Windows versions are possible in the future
+This is my personal nuPG version I have been working with and developing for the past couple of years.
 
 1. Download the latest SuperCollider from: https://supercollider.github.io/releases/2021/08/02/supercollider-3.12.0
 2. Install SuperCollider
@@ -15,10 +15,10 @@ at the moment working on Mac OS, Linux and Windows versions are possible in the 
 ![alt text](https://github.com/marcinpiet/nuPG_1.0/blob/main/nuPG_2024_ScreenShot.png?raw=true)
 
 9. Boot the Server using the 'Server' GUI at the bottom-left corner of the screen. Look at IDE's Post window for messages to see if the Server boots properly. Known problems: sample rate mismatch (fix it in the System Settings/Audio Midi Settings).
-10. When the Server is booted, the program is mute, you need to input (draw) data into the 'pulsaret' and 'envelope' tables (middle of the screen). After this press button '[>]' next to '1' on 'TRAINS++PRESETS' GUI (top of the screen). You should hear the output!!! 
-11. Explore the 'MAIN' window which gives direct control of the parameters. 
-12. To activate 'GRAPHS' control press '[s]' next to '[>]' on 'TRAINS++PRESETS' GUI (top of the screen). This activates the graphs reading task. You need to activate separate graph tasks on 'GRAPHS' window. Each of five graphs has a '[>]' button in the upper left corner - this activates them. 
-13. Control the speed of graph reading using a slider next to 'GRAPHS' window. Low values = slow, High values = fast. 
+10. When the Server is booted, the program is mute, you need to input (draw) data into the 'pulsaret waveform' and 'envelope ' tables (bottom left of the screen). After this navigate to the top left of the screen to '_train control' GUI and press button '[>]' next to 'loop'. You should hear the output!!! 
+11. Explore the '_main' window which gives direct control of the parameters. 
+12. To activate groups control press 'loop' next to '[>]' on '_train control' GUI (top left of the screen). This activates the parameter sequences for three sets of the formant, amplitude, panning and envelope dillation. You need to activate separate group on '_group control' GUI. 
+13. Please refer to the 'nuPG_24_userManual.pdf' for more information  
 14. This is work in progress (endless) ;)          
  
 
