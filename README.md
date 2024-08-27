@@ -15,9 +15,9 @@ This is the personal nuPG version I have been working with and developing for th
 ![alt text](https://github.com/marcinpiet/nuPG_1.0/blob/main/nuPG_2024_ScreenShot.png?raw=true)
 
 9. Boot the Server using the 'Server' GUI at the bottom-left corner of the screen. Look at IDE's Post window for messages to see if the Server boots properly. Known problems: sample rate mismatch (fix it in the System Settings/Audio Midi Settings).
-10. When the Server is booted, the program is mute, you need to input (draw) data into the 'pulsaret waveform' and 'envelope ' tables (bottom left of the screen). After this navigate to the top left of the screen to '_train control' GUI and press button '[>]' next to 'loop'. You should hear the output!!! 
+10. When the Server is booted, the program is mute, you need to input (draw) data into the 'pulsaret waveform' and 'envelope ' tables (bottom left of the screen). After this navigate to the top left of the screen to '_train control' GUI and press button '[n]' next to 'loop'. You should hear the output!!! 
 11. Explore the '_main' window which gives direct control of the parameters. 
-12. To activate group control press 'loop' next to '[>]' on '_train control' GUI (top left of the screen). This activates the parameter sequences for three sets of the formant, amplitude, panning and envelope dilation. You need to activate a separate group on '_group control' GUI. 
+12. To activate group control press 'loop' next to '[n]' on '_train control' GUI (top left of the screen). This activates the parameter sequences for three sets of the formant, amplitude, panning and envelope dilation. You need to activate a separate group on '_group control' GUI. 
 13. Please refer to the 'nuPG_24_userManual.pdf' for more information  
 14. tbc          
  
