@@ -19,7 +19,7 @@ This is the personal nuPG version I have been working with and developing for th
 11. Explore the '_main' window which gives direct control of the parameters. 
 12. To activate group control press 'loop' next to '[n]' on '_train control' GUI (top left of the screen). This activates the parameter sequences for three sets of the formant, amplitude, panning and envelope dilation. You need to activate a separate group on '_group control' GUI. 
 13. Please refer to the 'nuPG_24_userManual.pdf' for more information  
-14. A walkthrough video with the above steps can be found here: https://vimeo.com/1004876511?share=copy           
+14. A walkthrough video with above steps can be found here: https://vimeo.com/1004876511?share=copy           
  
 
 
