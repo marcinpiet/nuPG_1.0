@@ -1,5 +1,8 @@
 /*
 s.makeWindow
+// expects screensize of ca. 1600x1024 or more
+// check screensize with:
+Window.screenBounds
 */
 (
 ~numChannels = 2;
