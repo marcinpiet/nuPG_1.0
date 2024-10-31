@@ -1,3 +1,6 @@
+/*
+s.makeWindow
+*/
 (
 ~numChannels = 2;
 ~numberOfInstances = 3;
@@ -958,5 +961,3 @@ s.waitForBoot({
 		]);
 };})
 )
-
-s.makeWindow
