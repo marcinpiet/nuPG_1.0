@@ -1,0 +1,11 @@
+(
+	\name: "nuPG",
+	\path: "nuPG_1.0",
+	\summary: "new Pulsar Generator",
+	\author: "Marcin Pietruszewski",
+	\version: 1.0,
+	\since: "2024",
+	\dependencies: [
+		"JITLibExtensions", "miSCellaneous",
+	]
+)
