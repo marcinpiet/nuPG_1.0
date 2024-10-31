@@ -8,6 +8,7 @@ s.makeWindow
 Server.default.options.recChannels_(~numChannels).recSampleFormat_("int24");
 Server.default.options.memSize = 192000 * 24;
 Server.default.options.numOutputBusChannels = 32;
+Server.default.options.numWireBufs = 256;
 
 s.waitForBoot({
 	//settable number of instances = number of pulsar streams
