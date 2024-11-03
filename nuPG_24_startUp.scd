@@ -5,21 +5,28 @@ s.makeWindow
 Window.screenBounds
 */
 (
+//set number of output channels
 ~numChannels = 2;
+//settable number of instances = number of pulsar streams
+//this needs to be set at build time and cannot be changed after
 ~numberOfInstances = 3;
 
+// server settings
 Server.default.options.recChannels_(~numChannels).recSampleFormat_("int24");
 Server.default.options.memSize = 192000 * 24;
 Server.default.options.numOutputBusChannels = 32;
 Server.default.options.numWireBufs = 256;
 
+// set paths for tables, files and presets.
+// default location is here, in the nuPG quark folder:
+~here = thisProcess.nowExecutingPath.dirname;
+// keep ~tablesPath etc if given already, else use default:
+~tablesPath = ~tablesPath ?? { ~here +/+ "/nuPG_2024_release/TABLES/" };
+~filesPath =  ~filesPath ?? { ~here +/+ "/nuPG_2024_release/FILES/" };
+~presetsPath = ~presetsPath ?? { ~here +/+ "/nuPG_2024_release/PRESETS/" };
+
 s.waitForBoot({
-	//settable number of instances = number of pulsar streams
-	//this needs to be set at build time and cannot be changed after
-	//set number of output channels
-	~tablesPath = Platform.userExtensionDir ++ "/nuPG_2024_release/TABLES/";
-	~filesPath =  Platform.userExtensionDir ++ "/nuPG_2024_release/FILES/";
-	~presetsPath = Platform.userExtensionDir ++ "/nuPG_2024_release/PRESETS/";
+
 	//get corresponding number of buffers
 	//envelope random data to fill the buffer
 	~envelope = Signal.sineFill(2048, { 0.0.rand }.dup(7));
