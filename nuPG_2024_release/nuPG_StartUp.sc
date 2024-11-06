@@ -897,8 +897,8 @@ NuPG_StartUp {
 }
 
 //test
-a = NuPG_StartUp.new;
-a.start;
+//a = NuPG_StartUp.new;
+//a.start;
 
 
 
