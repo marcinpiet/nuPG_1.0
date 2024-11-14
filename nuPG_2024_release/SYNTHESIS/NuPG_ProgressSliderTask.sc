@@ -6,7 +6,7 @@ NuPG_ProgressSliderPlay {
 
 		tasks = n.collect{|i|
 
-			Tdef(\progressSliderPlayer_ ++ i.asSymbol, {|env|
+			Tdef((\progressSliderPlayer_ ++ i).asSymbol, {|env|
 
 				var divider = switch(env.progressDirection,
 					0, {(0..200)},

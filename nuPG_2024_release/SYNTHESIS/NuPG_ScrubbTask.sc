@@ -7,7 +7,7 @@ NuPG_ScrubbTask {
 
 		tasks = n.collect{|i|
 
-			Tdef(\trainScrubb_ ++ i.asSymbol, {|env|
+			Tdef((\trainScrubb_ ++ i).asSymbol, {|env|
 
 
 				loop{
