@@ -6,7 +6,7 @@ NuPG_LoopTask {
 
         taskSingleShot = n.collect{|i|
 
-			Tdef(\trainPlayerSingleShot_ ++ i.asSymbol, {|env|
+			Tdef((\trainPlayerSingleShot_ ++ i).asSymbol, {|env|
 
 				var loopSize = switch(0,
 					0, {(0..2048)},
@@ -232,7 +232,7 @@ NuPG_LoopTask {
 
 		tasks = n.collect{|i|
 
-			Tdef(\trainPlayer_ ++ i.asSymbol, {|env|
+			Tdef((\trainPlayer_ ++ i).asSymbol, {|env|
 
 				var loopSize = switch(env.playbackDirection,
 					0, {(0..2048)},

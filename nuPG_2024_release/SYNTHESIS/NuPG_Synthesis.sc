@@ -91,7 +91,7 @@ NuPG_Synthesis {
 
 		trainInstances = numInstances.collect{|i|
 
-			Ndef(\nuPG_train_ ++ i.asSymbol, {
+			Ndef((\nuPG_train_ ++ i).asSymbol, {
 				//buffers
 				arg pulsaret_buffer, envelope_buffer = -1, frequency_buffer,
 				//flux, modulations
@@ -609,7 +609,7 @@ NuPG_Synthesis {
 //
 // 		trainInstances = numInstances.collect{|i|
 //
-// 			Ndef(\nuPG_train_ ++ i.asSymbol, {
+// 			Ndef((\nuPG_train_ ++ i).asSymbol, {
 // 				arg pulsaret_buffer, envelope_buffer = -1, frequency_buffer,
 // 				allFluxAmt = 0.0, allFluxAmt_loop = 1, fluxRate = 40,
 // 				fmRatio = 5, fmRatio_loop = 1, fmAmt = 5, fmAmt_loop = 1,
@@ -833,7 +833,7 @@ NuPG_Synthesis {
 //
 // 		trainInstances = n.collect{|i|
 //
-// 			Ndef(\nuPG_train_ ++ i.asSymbol, {
+// 			Ndef((\nuPG_train_ ++ i).asSymbol, {
 // 				arg pulsaret_buffer, envelope_buffer = -1,
 // 				allFluxAmt = 0.0, fluxRate = 40,
 // 				fmRatio = 0, fmRatio_loop = 0, fmAmt = 0, fmAmt_loop = 0,
